@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCart } from '../contexts/CartContext';
-import type { Order, MenuItem } from '../types';
+import type { Order, MenuItem } from '../types/index';
 
 const mockMenuItems: MenuItem[] = [
   {

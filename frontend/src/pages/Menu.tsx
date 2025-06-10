@@ -262,27 +262,27 @@ const Menu: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   {cartItems.map((item) => (
-                    <div key={item.menuItem.id} className="flex items-center justify-between space-x-4">
+                    <div key={item.menuItem.menuItemId} className="flex items-center justify-between space-x-4">
                       <div className="flex-1">
-                        <p className="font-medium">{item.menuItem.name}</p>
+                        <p className="font-medium">{item.menuItem.menuItemName}</p>
                         <p className="text-sm text-gray-500">${item.menuItem.menuItemPrice.toFixed(2)}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => updateQuantity(item.menuItem.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.menuItem.menuItemId, item.quantity - 1)}
                           className="h-8 w-8 rounded-md border text-black border-blue-500 bg-white flex items-center justify-center hover:bg-blue-100"
                         >
                           -
                         </button>
                         <span className="w-8 text-center text-black">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.menuItem.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.menuItem.menuItemId, item.quantity + 1)}
                           className="h-8 w-8 rounded-md border text-black border-blue-500 bg-white flex items-center justify-center hover:bg-blue-100"
                         >
                           +
                         </button>
                         <button
-                          onClick={() => removeItem(item.menuItem.id)}
+                          onClick={() => removeItem(item.menuItem.menuItemId)}
                           className="h-8 w-8 rounded-md bg-red-500 text-black flex items-center justify-center hover:bg-red-600"
                         >
                           X

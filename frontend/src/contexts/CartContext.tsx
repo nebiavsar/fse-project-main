@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import type { MenuItem, OrderItem } from '../types';
+import type { MenuItem, OrderItem } from '../types/index';
 
 export type CartItem = {
   menuItem: MenuItem;
@@ -25,10 +25,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = (menuItem: MenuItem) => {
     setItems(currentItems => {
-      const existingItem = currentItems.find(item => item.menuItem.id === menuItem.id);
+      const existingItem = currentItems.find(item => item.menuItem.menuItemId === menuItem.menuItemId);
       if (existingItem) {
         return currentItems.map(item =>
-          item.menuItem.id === menuItem.id
+          item.menuItem.menuItemId === menuItem.menuItemId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -39,7 +39,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeItem = (itemId: number) => {
     setItems(currentItems =>
-      currentItems.filter(item => item.menuItem.id !== itemId)
+      currentItems.filter(item => item.menuItem.menuItemId !== itemId)
     );
   };
 
@@ -50,7 +50,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setItems(currentItems =>
       currentItems.map(item =>
-        item.menuItem.id === itemId
+        item.menuItem.menuItemId === itemId
           ? { ...item, quantity }
           : item
       )
@@ -60,11 +60,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => setItems([]);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0);
+  const totalPrice = items.reduce((sum, item) => sum + (item.menuItem.menuItemPrice * item.quantity), 0);
 
   const getOrderItems = (): OrderItem[] => {
     return items.map(item => ({
-      menuItemId: item.menuItem.id,
+      menuItemId: item.menuItem.menuItemId,
       quantity: item.quantity
     }));
   };

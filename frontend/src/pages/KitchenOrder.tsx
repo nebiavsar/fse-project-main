@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Order, OrderStatus } from '../types';
+import type { Order, OrderStatus } from '../types/index';
 import { API_ENDPOINTS } from '../config/api';
 
 interface OrderItem {
@@ -140,10 +140,7 @@ const KitchenOrder: React.FC = () => {
                 </div>
                 
                 <div className="pt-4 border-t">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-medium">Toplam</span>
-                    <span className="font-medium">{order.orderPrice} TL</span>
-                  </div>
+                  
                   
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">
