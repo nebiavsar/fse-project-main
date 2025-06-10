@@ -31,17 +31,33 @@ const KitchenOrder: React.FC = () => {
       if (!response.ok) throw new Error('Siparişler yüklenirken bir hata oluştu');
       
       const data = await response.json();
-      const transformedOrders: KitchenOrder[] = data.map((order: any) => ({
-        ...order,
-        items: order.orderMenuItems.map((item: any) => ({
-          menuItemId: item.menuItemId,
-          name: item.menuItemName,
-          price: item.menuItemPrice,
-          quantity: 1 // Backend'den quantity bilgisi gelmediği için varsayılan 1
-        })),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }));
+      const transformedOrders: KitchenOrder[] = data.map((order: any) => {
+        // Aynı menuItemId'ye sahip öğeleri birleştir
+        const itemMap = new Map<number, OrderItem>();
+        
+        order.orderMenuItems.forEach((item: any) => {
+          const existingItem = itemMap.get(item.menuItemId);
+          if (existingItem) {
+            // Eğer öğe zaten varsa quantity'yi artır
+            existingItem.quantity += 1;
+          } else {
+            // Yeni öğe ekle
+            itemMap.set(item.menuItemId, {
+              menuItemId: item.menuItemId,
+              name: item.menuItemName,
+              price: item.menuItemPrice,
+              quantity: 1
+            });
+          }
+        });
+
+        return {
+          ...order,
+          items: Array.from(itemMap.values()),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+      });
       
       setOrders(transformedOrders);
       setError(null);

@@ -87,15 +87,20 @@ const Menu: React.FC = () => {
     }
 
     try {
+      // Sepetteki her öğeyi quantity kadar tekrarla
+      const expandedOrderItems = cartItems.flatMap(item => 
+        Array(item.quantity).fill({
+          menuItemId: item.menuItem.menuItemId
+        })
+      );
+
       const orderData = {
         orderTable: {
           tableId: selectedTable
         },
         orderPrice: totalPrice,
         orderStatue: 0, // 0: pending, 1: preparing, 2: completed
-        orderMenuItems: cartItems.map(item => ({
-          menuItemId: item.menuItem.menuItemId
-        }))
+        orderMenuItems: expandedOrderItems
       };
 
       const response = await fetch(`${API_ENDPOINTS.ORDERS.BASE}`, {
