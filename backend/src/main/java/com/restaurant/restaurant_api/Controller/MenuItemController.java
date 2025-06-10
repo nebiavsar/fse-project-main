@@ -40,9 +40,14 @@ public class MenuItemController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMenuItem(@PathVariable int id) {
-        menuItemService.deleteMenuItem(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteMenuItem(@PathVariable int id) {
+        try {
+            menuItemService.deleteMenuItem(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(e.getMessage());
+        }
     }
 
     @GetMapping("/filter/{category}")

@@ -125,26 +125,9 @@ public class OrderService {
         if (getValidation().isIdValid(orderId)) {
             Order oldOrder = getOrderRepository().findById(orderId);
             if (oldOrder != null) {
-                if (order.getOrderTable() != null) {
-                    if (getTableRepository().existsById(order.getOrderTable().getTableId())) {
-                        if (order.getOrderCard() != null && !getCardRepository().existsById(order.getOrderCard().getCardId())) {
-                            throw new NoSuchElementException("card not found");
-                        }
-                        for (MenuItem menuItem : order.getOrderMenuItems()) {
-                            if (!getMenuItemRepository().existsById(menuItem.getMenuItemId())) {
-                                throw new NoSuchElementException("menuItem is not found");
-                            }
-                        }
-                        oldOrder.setOrderCard(order.getOrderCard());
-                        oldOrder.setOrderPrice(order.getOrderPrice());
-                        oldOrder.setOrderStatue(order.getOrderStatue());
-                        oldOrder.setOrderTable(order.getOrderTable());
-                        oldOrder.setOrderMenuItems(order.getOrderMenuItems());
-                        return getOrderRepository().save(oldOrder);
-                    }
-                    throw new NoSuchElementException("table not found");
-                }
-                throw new IllegalArgumentException("orderTable cannot be null");
+                // Sadece orderStatue'u güncelle
+                oldOrder.setOrderStatue(order.getOrderStatue());
+                return getOrderRepository().save(oldOrder);
             }
             throw new NoSuchElementException("order is not found");
         }

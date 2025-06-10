@@ -133,7 +133,12 @@ const MenuManagement: React.FC = () => {
       toast.success('Menu item deleted successfully');
       fetchMenuItems();
     } catch (error) {
-      toast.error('Failed to delete menu item');
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data || 'Failed to delete menu item';
+        toast.error(errorMessage);
+      } else {
+        toast.error('Failed to delete menu item');
+      }
     }
   };
 

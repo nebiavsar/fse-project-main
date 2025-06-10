@@ -71,16 +71,12 @@ const KitchenOrder: React.FC = () => {
 
   const updateOrderStatus = async (orderId: number, newStatus: OrderStatus) => {
     try {
-      const order = orders.find(o => o.orderId === orderId);
-      if (!order) return;
-
       const response = await fetch(`${API_ENDPOINTS.ORDERS.BASE}/${orderId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...order,
           orderStatue: newStatus
         })
       });
