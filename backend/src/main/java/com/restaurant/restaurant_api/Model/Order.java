@@ -28,6 +28,10 @@ public class Order {
     @JoinColumn(name = "card_id")
     private Card orderCard;
 
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "ORDER_MENU_ITEM",
@@ -38,20 +42,22 @@ public class Order {
 
     public Order() {}
 
-    public Order(int orderId, com.restaurant.restaurant_api.Model.Table orderTable, int orderPrice, short orderStatue, Card orderCard, List<MenuItem> orderMenuItems) {
+    public Order(int orderId, com.restaurant.restaurant_api.Model.Table orderTable, int orderPrice, short orderStatue, Card orderCard, Customer customer, List<MenuItem> orderMenuItems) {
         this.orderId = orderId;
         this.orderTable = orderTable;
         this.orderPrice = orderPrice;
         this.orderStatue = orderStatue;
         this.orderCard = orderCard;
+        this.customer = customer;
         this.orderMenuItems = orderMenuItems;
     }
 
-    public Order(com.restaurant.restaurant_api.Model.Table orderTable, int orderPrice, short orderStatue, Card orderCard, List<MenuItem> orderMenuItems) {
+    public Order(com.restaurant.restaurant_api.Model.Table orderTable, int orderPrice, short orderStatue, Card orderCard, Customer customer, List<MenuItem> orderMenuItems) {
         this.orderTable = orderTable;
         this.orderPrice = orderPrice;
         this.orderStatue = orderStatue;
         this.orderCard = orderCard;
+        this.customer = customer;
         this.orderMenuItems = orderMenuItems;
     }
 
@@ -75,6 +81,10 @@ public class Order {
         return orderCard;
     }
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
     public List<MenuItem> getOrderMenuItems() {
         return orderMenuItems;
     }
@@ -95,6 +105,10 @@ public class Order {
         this.orderCard = orderCard;
     }
 
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
     public void setOrderMenuItems(List<MenuItem> orderMenuItems) {
         this.orderMenuItems = orderMenuItems;
     }
@@ -107,6 +121,7 @@ public class Order {
                 ", orderPrice=" + orderPrice +
                 ", orderStatue=" + orderStatue +
                 ", orderCard=" + (orderCard != null ? orderCard.getCardId() : "null") +
+                ", customer=" + (customer != null ? customer.getCustomerId() : "null") +
                 ", orderMenuItems=" + orderMenuItems +
                 '}';
     }

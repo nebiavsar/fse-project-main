@@ -10,6 +10,7 @@ const Cart: React.FC = () => {
   const [tables, setTables] = useState<Table[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const navigate = useNavigate();
+  const customerId = localStorage.getItem('customerId') ? parseInt(localStorage.getItem('customerId')!) : null;
 
   useEffect(() => {
     fetchTables();
@@ -30,7 +31,7 @@ const Cart: React.FC = () => {
   const fetchOrders = async () => {
     try {
       const response = await axios.get(API_ENDPOINTS.ORDERS.BASE);
-      const pendingOrders = response.data.filter((order: Order) => 
+      const pendingOrders = response.data.filter((order: any) => 
         order.orderStatue === 2 || order.orderStatue === 0
       );
       setOrders(pendingOrders);
@@ -54,12 +55,29 @@ const Cart: React.FC = () => {
     }
   };
 
-  if (tables.length === 0) {
+  // Giriş yapmış kullanıcı için sadece kendi masalarını filtrele
+  const filteredTables = customerId
+    ? tables.filter(table => {
+        const tableOrder = orders.find(order => 
+          order.orderTable.tableId === table.tableId && 
+          order.customer?.customerId === customerId
+        );
+        return tableOrder !== undefined;
+      })
+    : tables;
+
+  if (filteredTables.length === 0) {
     return (
       <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8">Ödeme Bekleyen Masalar</h1>
+        <h1 className="text-3xl font-bold mb-8">
+          {customerId ? 'Siparişlerim' : 'Ödeme Bekleyen Masalar'}
+        </h1>
         <div className="text-center py-12">
-          <p className="text-gray-500">Şu anda ödeme bekleyen masa bulunmuyor.</p>
+          <p className="text-gray-500">
+            {customerId 
+              ? 'Şu anda bekleyen siparişiniz bulunmuyor.'
+              : 'Şu anda ödeme bekleyen masa bulunmuyor.'}
+          </p>
         </div>
       </div>
     );
@@ -67,10 +85,15 @@ const Cart: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-8">Ödeme Bekleyen Masalar</h1>
+      <h1 className="text-3xl font-bold mb-8">
+        {customerId ? 'Siparişlerim' : 'Ödeme Bekleyen Masalar'}
+      </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tables.map((table) => {
-          const tableOrder = orders.find(order => order.orderTable.tableId === table.tableId);
+        {filteredTables.map((table) => {
+          const tableOrder = orders.find(order => 
+            order.orderTable.tableId === table.tableId && 
+            (!customerId || order.customer?.customerId === customerId)
+          );
           return (
             <Card key={table.tableId}>
               <CardContent className="p-6">

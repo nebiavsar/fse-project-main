@@ -12,6 +12,17 @@ const Payment = () => {
   const location = useLocation();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [showCashConfirmation, setShowCashConfirmation] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | null>(null);
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    cvv: '',
+    expiryDate: '',
+    firstName: '',
+    lastName: ''
+  });
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
     // Cart sayfasından gelen sipariş bilgisini al
@@ -63,7 +74,9 @@ const Payment = () => {
     try {
       // Ödemeyi tamamla
       await axios.put(`${API_ENDPOINTS.ORDERS.BY_ID(order.orderId)}`, {
-        orderStatue: 3 // PAID
+        orderStatue: 3, // PAID
+        paymentMethod: paymentMethod,
+        cardDetails: paymentMethod === 'card' ? cardDetails : null
       });
 
       // Masa durumunu güncelle
@@ -79,6 +92,11 @@ const Payment = () => {
       console.error('Ödeme işlemi sırasında hata:', error);
       toast.error('Ödeme işlemi başarısız oldu');
     }
+  };
+
+  const handleCardSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handlePayment();
   };
 
   if (loading) {
@@ -104,6 +122,129 @@ const Payment = () => {
     }
     return acc;
   }, {});
+
+  // Kredi kartı formu
+  if (showCardForm) {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-md">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Kredi Kartı Bilgileri</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCardSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Ad</label>
+                  <input
+                    type="text"
+                    placeholder="Ad"
+                    className="w-full p-2 border rounded-md"
+                    value={cardDetails.firstName}
+                    onChange={(e) => setCardDetails({...cardDetails, firstName: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Soyad</label>
+                  <input
+                    type="text"
+                    placeholder="Soyad"
+                    className="w-full p-2 border rounded-md"
+                    value={cardDetails.lastName}
+                    onChange={(e) => setCardDetails({...cardDetails, lastName: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Kart Numarası</label>
+                <input
+                  type="text"
+                  maxLength={16}
+                  placeholder="1234 5678 9012 3456"
+                  className="w-full p-2 border rounded-md"
+                  value={cardDetails.cardNumber}
+                  onChange={(e) => setCardDetails({...cardDetails, cardNumber: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Son Kullanma Tarihi</label>
+                  <input
+                    type="text"
+                    maxLength={5}
+                    placeholder="MM/YY"
+                    className="w-full p-2 border rounded-md"
+                    value={cardDetails.expiryDate}
+                    onChange={(e) => setCardDetails({...cardDetails, expiryDate: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">CVV</label>
+                  <input
+                    type="text"
+                    maxLength={3}
+                    placeholder="123"
+                    className="w-full p-2 border rounded-md"
+                    value={cardDetails.cvv}
+                    onChange={(e) => setCardDetails({...cardDetails, cvv: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
+              >
+                Ödemeyi Tamamla
+              </button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Nakit ödeme onay formu
+  if (showCashConfirmation) {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-md">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Nakit Ödeme Onayı</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="text-center">
+                <p className="text-lg mb-4">Toplam Tutar: <span className="font-bold text-primary">{order.orderPrice} TL</span></p>
+                <p className="text-gray-600 mb-6">Lütfen ödemeyi aldıktan sonra onaylayın.</p>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowCashConfirmation(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-md transition-colors text-lg font-semibold hover:bg-gray-300"
+                >
+                  Geri Dön
+                </button>
+                <button
+                  onClick={() => {
+                    setPaymentMethod('cash');
+                    handlePayment();
+                  }}
+                  className="flex-1 bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
+                >
+                  Nakit Olarak Ödendi
+                </button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-md">
@@ -137,12 +278,41 @@ const Payment = () => {
               </div>
             </div>
 
-            <button
-              onClick={handlePayment}
-              className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
-            >
-              Ödemeyi Tamamla
-            </button>
+            {isAdmin ? (
+              <button
+                onClick={handlePayment}
+                className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
+              >
+                Ödemeyi Tamamla
+              </button>
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Ödeme Yöntemi Seçin</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setShowCashConfirmation(true)}
+                    className="p-4 border-2 border-white-500 bg-white-500 text-white rounded-md hover:bg-green-600 hover:border-green-600 transition-colors"
+                  >
+                    <div className="text-center">
+                      <span className="text-2xl">💵</span>
+                      <p className="mt-2 font-medium">Nakit</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPaymentMethod('card');
+                      setShowCardForm(true);
+                    }}
+                    className="p-4 border-2 border-white-500 bg-white-500 text-white rounded-md hover:bg-blue-600 hover:border-blue-600 transition-colors"
+                  >
+                    <div className="text-center">
+                      <span className="text-2xl">💳</span>
+                      <p className="mt-2 font-medium">Kredi Kartı</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

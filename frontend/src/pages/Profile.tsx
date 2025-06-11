@@ -1,18 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
+import type { Order } from '../types/index';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const customerId = localStorage.getItem('customerId');
   const customerName = localStorage.getItem('customerName');
+  const [orders, setOrders] = useState<Order[]>([]);
 
   // Eğer kullanıcı giriş yapmamışsa login sayfasına yönlendir
   React.useEffect(() => {
     if (!customerId) {
       navigate('/login');
+    } else {
+      fetchOrders();
     }
   }, [customerId, navigate]);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.ORDERS.BASE);
+      // Sadece ödenmiş siparişleri filtrele (orderStatue === 3)
+      const paidOrders = response.data.filter((order: any) => 
+        order.customer?.customerId === parseInt(customerId!) && 
+        order.orderStatue === 3
+      );
+      setOrders(paidOrders);
+    } catch (error) {
+      console.error('Siparişler yüklenirken hata:', error);
+    }
+  };
 
   if (!customerId) {
     return null;
@@ -20,7 +40,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Card className="max-w-2xl mx-auto">
+      <Card className="max-w-2xl mx-auto mb-8">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Profil Bilgileri</CardTitle>
         </CardHeader>
@@ -35,6 +55,53 @@ const Profile: React.FC = () => {
               <p className="text-gray-600">{customerName}</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Geçmiş Siparişlerim</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {orders.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">Henüz ödenmiş siparişiniz bulunmuyor.</p>
+          ) : (
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <Card key={order.orderId} className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold">Masa {order.orderTable.tableId}</h3>
+                      <div className="mt-2">
+                        <h4 className="font-medium">Sipariş İçeriği:</h4>
+                        <ul className="list-disc list-inside text-sm text-gray-600">
+                          {Object.entries(
+                            order.orderMenuItems.reduce((acc: { [key: string]: { count: number; price: number; name: string } }, item: any) => {
+                              const key = `${item.menuItemId}-${item.menuItemName}`;
+                              if (!acc[key]) {
+                                acc[key] = { count: 1, price: item.menuItemPrice, name: item.menuItemName };
+                              } else {
+                                acc[key].count++;
+                              }
+                              return acc;
+                            }, {})
+                          ).map(([key, item]) => (
+                            <li key={key}>
+                              {item.count}x {item.name} - {item.price} TL
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">{order.orderPrice} TL</p>
+                      <p className="text-sm text-green-600">Ödendi</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
