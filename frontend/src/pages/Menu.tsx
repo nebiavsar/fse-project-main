@@ -36,7 +36,7 @@ const Menu: React.FC = () => {
         // Masaya ait aktif sipariş var mı kontrol et
         const hasActiveOrder = ordersData.some((order: any) => 
           order.orderTable.tableId === table.tableId && 
-          order.orderStatue !== 2 // 2: tamamlandı
+          order.orderStatue !== 2 && order.orderStatue !== 3 // 2: tamamlandı, 3: ödendi
         );
 
         return {

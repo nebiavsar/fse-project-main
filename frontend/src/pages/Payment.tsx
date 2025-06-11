@@ -1,121 +1,147 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Order, PaymentMethod } from '../types';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { API_ENDPOINTS } from '../config/api';
+import type { Order, MenuItem } from '../types/index';
 
-// Mock data for testing
-const mockOrder: Order = {
-  id: '1',
-  tableId: 1,
-  items: [
-    { id: 1, name: 'Classic Burger', quantity: 2, price: 12.99 },
-    { id: 2, name: 'Caesar Salad', quantity: 1, price: 8.99 }
-  ],
-  status: 'pending',
-  total: 34.97,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  paymentStatus: 'unpaid'
-};
+const Payment = () => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const Payment: React.FC = () => {
-  const { orderId } = useParams();
-  const [order] = useState<Order>(mockOrder);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [processing, setProcessing] = useState(false);
+  useEffect(() => {
+    // Cart sayfasından gelen sipariş bilgisini al
+    const orderFromCart = location.state?.order;
+    if (orderFromCart) {
+      console.log('Cart sayfasından gelen sipariş:', orderFromCart);
+      setOrder(orderFromCart);
+      setLoading(false);
+    } else {
+      // Eğer state'ten sipariş gelmediyse, API'den al
+      const tableId = params.tableId;
+      if (!tableId) {
+        toast.error('Masa ID bulunamadı');
+        navigate('/cart');
+        return;
+      }
+
+      const fetchOrder = async () => {
+        try {
+          const response = await axios.get(API_ENDPOINTS.ORDERS.BASE);
+          const tableOrder = response.data.find(
+            (order: Order) => 
+              order.orderTable.tableId === Number(tableId) && 
+              (order.orderStatue === 2 || order.orderStatue === 0)
+          );
+          
+          if (tableOrder) {
+            setOrder(tableOrder);
+          } else {
+            toast.error('Bu masa için bekleyen sipariş bulunamadı');
+            navigate('/cart');
+          }
+        } catch (error) {
+          console.error('Sipariş yüklenirken hata:', error);
+          toast.error('Sipariş yüklenirken bir hata oluştu');
+          navigate('/cart');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchOrder();
+    }
+  }, [params.tableId, navigate, location.state]);
 
   const handlePayment = async () => {
-    if (!selectedMethod) return;
+    if (!order) return;
     
-    setProcessing(true);
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Update order with payment info
-    const updatedOrder = {
-      ...order,
-      paymentStatus: 'paid' as const,
-      paymentMethod: selectedMethod,
-      updatedAt: new Date()
-    };
-    
-    // TODO: Send to backend
-    console.log('Payment processed:', updatedOrder);
-    
-    setProcessing(false);
+    try {
+      // Ödemeyi tamamla
+      await axios.put(`${API_ENDPOINTS.ORDERS.BY_ID(order.orderId)}`, {
+        orderStatue: 3 // PAID
+      });
+
+      // Masa durumunu güncelle
+      await axios.put(`${API_ENDPOINTS.TABLES.BY_ID(order.orderTable.tableId)}`, {
+        tableId: order.orderTable.tableId,
+        tableAvailable: true,
+        tableTotalCost: 0
+      });
+
+      toast.success('Ödeme başarıyla tamamlandı');
+      navigate('/cart');
+    } catch (error) {
+      console.error('Ödeme işlemi sırasında hata:', error);
+      toast.error('Ödeme işlemi başarısız oldu');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-md">
+        <div className="flex justify-center items-center h-64">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return null;
+  }
+
+  // Menü öğelerini grupla ve sayılarını hesapla
+  const groupedItems = order.orderMenuItems.reduce((acc: { [key: string]: { item: MenuItem, count: number } }, item) => {
+    if (!acc[item.menuItemId]) {
+      acc[item.menuItemId] = { item, count: 1 };
+    } else {
+      acc[item.menuItemId].count++;
+    }
+    return acc;
+  }, {});
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>Payment for Table {order.tableId}</CardTitle>
+          <CardTitle className="text-2xl">Masa {order.orderTable.tableId} - Sipariş Detayı</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-6">
-            {/* Order Summary */}
-            <div className="space-y-2">
-              {order.items.map(item => (
-                <div key={item.id} className="flex justify-between">
-                  <span>{item.quantity}x {item.name}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold border-b pb-2">Sipariş İçeriği</h3>
+              {Object.values(groupedItems).map(({ item, count }) => (
+                <div key={item.menuItemId} className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <span className="font-medium">{item.menuItemName}</span>
+                    <span className="text-gray-500 ml-2">x{count}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-medium">{item.menuItemPrice} TL</span>
+                    <div className="text-sm text-gray-500">
+                      Toplam: {(item.menuItemPrice * count).toFixed(2)} TL
+                    </div>
+                  </div>
                 </div>
               ))}
-              <div className="pt-2 border-t mt-4">
-                <div className="flex justify-between font-medium">
-                  <span>Total</span>
-                  <span>${order.total.toFixed(2)}</span>
+              <div className="pt-4 border-t mt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold">Genel Toplam</span>
+                  <span className="text-xl font-bold text-primary">{order.orderPrice} TL</span>
                 </div>
               </div>
             </div>
 
-            {/* Payment Methods */}
-            <div className="space-y-3">
-              <h3 className="font-medium">Select Payment Method</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setSelectedMethod('credit_card')}
-                  className={`p-4 rounded-md border-2 transition-colors ${
-                    selectedMethod === 'credit_card'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-600'
-                  }`}
-                >
-                  <div className="font-medium">Credit Card</div>
-                  <div className="text-sm text-muted-foreground">Pay with card</div>
-                </button>
-                <button
-                  onClick={() => setSelectedMethod('cash')}
-                  className={`p-4 rounded-md border-2 transition-colors ${
-                    selectedMethod === 'cash'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-600'
-                  }`}
-                >
-                  <div className="font-medium">Cash</div>
-                  <div className="text-sm text-muted-foreground">Pay in person</div>
-                </button>
-              </div>
-            </div>
-
-            {/* Process Payment Button */}
             <button
               onClick={handlePayment}
-              disabled={!selectedMethod || processing}
-              className={`w-full py-3 px-4 rounded-md transition-colors ${
-                !selectedMethod || processing
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
             >
-              {processing ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </div>
-              ) : (
-                'Process Payment'
-              )}
+              Ödemeyi Tamamla
             </button>
           </div>
         </CardContent>
@@ -125,3 +151,5 @@ const Payment: React.FC = () => {
 };
 
 export default Payment;
+
+

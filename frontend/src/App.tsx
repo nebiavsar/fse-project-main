@@ -23,7 +23,6 @@ const Header = () => {
             <Link to="/menu" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Menu</Link>
             <Link to="/table-management" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Tables</Link>
             <Link to="/kitchen" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Kitchen</Link>
-            <Link to="/online-order" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Order Online</Link>
             <Link to="/management" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Menu Management</Link>
           </div>
           <Link 
@@ -57,10 +56,9 @@ function App() {
                 <Route path="/menu" element={<Menu />} />
                 <Route path="/table-management" element={<TableManagement />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/payment/:tableId" element={<Payment />} />
                 <Route path="/kitchen" element={<KitchenOrder />} />
-                <Route path="/payment/:orderId" element={<Payment />} />
                 <Route path="/management" element={<MenuManagement />} />
-                <Route path="/online-order" element={<Navigate to="/menu" />} />
               </Routes>
             </Suspense>
           </main>
