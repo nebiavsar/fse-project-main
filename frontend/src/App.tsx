@@ -13,6 +13,8 @@ import Admin from './pages/Admin';
 import { Toaster, toast } from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
 import SignIn from './pages/SignIn';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
 
 const Header = () => {
   const { totalItems } = useCart();
@@ -23,6 +25,8 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem('customerId');
+    localStorage.removeItem('customerName');
     toast.success('Logged out successfully');
     navigate('/');
   };
@@ -110,6 +114,8 @@ function App() {
                 <Route path="/management" element={<MenuManagement />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/sign-in" element={<SignIn />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/profile" element={<Profile />} />
               </Routes>
             </Suspense>
           </main>

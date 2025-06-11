@@ -100,7 +100,8 @@ const Menu: React.FC = () => {
         },
         orderPrice: totalPrice,
         orderStatue: 0, // 0: pending, 1: preparing, 2: completed
-        orderMenuItems: expandedOrderItems
+        orderMenuItems: expandedOrderItems,
+        customerId: localStorage.getItem('customerId') ? parseInt(localStorage.getItem('customerId')!) : null
       };
 
       const response = await fetch(`${API_ENDPOINTS.ORDERS.BASE}`, {
