@@ -20,11 +20,15 @@ const Home: React.FC = () => {
           >
             View Menu
           </Link>
+        </div>
+
+        <div className="mt-12 animate-fade-up animation-delay-600">
+          <p className="text-muted-foreground mb-4">Don't you have an account?</p>
           <Link
-            to="/management"
-            className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            to="/sign-in"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105"
           >
-            Management
+            Create one now!
           </Link>
         </div>
       </div>
