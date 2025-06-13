@@ -29,11 +29,10 @@ const TableManagement: React.FC = () => {
       setLoading(true);
       const response = await fetch(API_ENDPOINTS.TABLES.BASE);
       const data = await response.json();
-      console.log('Backend\'den gelen ham veri:', JSON.stringify(data, null, 2));
+      console.log('Raw data from backend:', JSON.stringify(data, null, 2));
       
-      // Her bir masa için detaylı log
       data.forEach((table: any, index: number) => {
-        console.log(`Masa ${index + 1} detayları:`, {
+        console.log(`Table ${index + 1} details:`, {
           tableId: table.tableId,
           tableTotalCost: table.tableTotalCost,
           isTableAvailable: table.isTableAvailable,
@@ -42,7 +41,6 @@ const TableManagement: React.FC = () => {
         });
       });
       
-      // Backend'den gelen veriyi Table tipine dönüştür
       const processedTables: Table[] = data.map((table: any) => {
         const processedTable: Table = {
           tableId: table.tableId,
@@ -53,12 +51,12 @@ const TableManagement: React.FC = () => {
         return processedTable;
       });
       
-      console.log('İşlenmiş masalar:', processedTables);
+      console.log('Processed tables:', processedTables);
       setTables(processedTables);
       setError(null);
     } catch (err) {
-      setError('Masalar yüklenirken bir hata oluştu');
-      console.error('Masalar yüklenirken hata:', err);
+      setError('Error loading tables');
+      console.error('Error loading tables:', err);
     } finally {
       setLoading(false);
     }
@@ -69,7 +67,6 @@ const TableManagement: React.FC = () => {
       const response = await fetch(API_ENDPOINTS.WAITERS.BASE);
       const data = await response.json();
       
-      // Her garsonun atanmış masa sayısını hesapla
       const serversWithTableCount = data.map((server: Server) => {
         const assignedTables = tables.filter(table => 
           table.tableWaiter?.employeeId === server.employeeId
@@ -83,7 +80,7 @@ const TableManagement: React.FC = () => {
       
       setServers(serversWithTableCount);
     } catch (err) {
-      console.error('Garsonlar yüklenirken hata:', err);
+      console.error('Error loading waiters:', err);
     }
   };
 
@@ -95,7 +92,7 @@ const TableManagement: React.FC = () => {
         tableWaiter: null
       };
       
-      console.log('Yeni masa oluşturuluyor:', newTable);
+      console.log('Creating new table:', newTable);
       const response = await fetch(API_ENDPOINTS.TABLES.BASE, {
         method: 'POST',
         headers: {
@@ -104,12 +101,12 @@ const TableManagement: React.FC = () => {
         body: JSON.stringify(newTable)
       });
       const data = await response.json();
-      console.log('Masa oluşturuldu:', data);
+      console.log('Table created:', data);
       
       await fetchTables();
     } catch (err) {
-      setError('Masa oluşturulurken bir hata oluştu');
-      console.error('Masa oluşturma hatası:', err);
+      setError('Error creating table');
+      console.error('Error creating table:', err);
     }
   };
 
@@ -122,12 +119,12 @@ const TableManagement: React.FC = () => {
         },
         body: JSON.stringify({
           ...newServer,
-          waiterTables: 0 // Başlangıçta 0 masa atanmış olarak başlar
+          waiterTables: 0
         })
       });
 
       if (!response.ok) {
-        throw new Error('Garson eklenirken bir hata oluştu');
+        throw new Error('Error adding waiter');
       }
 
       await fetchServers();
@@ -137,8 +134,8 @@ const TableManagement: React.FC = () => {
         employeeSalary: 0
       });
     } catch (err) {
-      setError('Garson eklenirken bir hata oluştu');
-      console.error('Garson ekleme hatası:', err);
+      setError('Error adding waiter');
+      console.error('Error adding waiter:', err);
     }
   };
 
@@ -152,9 +149,9 @@ const TableManagement: React.FC = () => {
 
   const getTableStatusText = (isAvailable: boolean) => {
     if (isAvailable) {
-      return 'Müsait';
+      return 'Available';
     } else {
-      return 'Dolu';
+      return 'Occupied';
     }
   };
 
@@ -173,23 +170,20 @@ const TableManagement: React.FC = () => {
 
   const assignServer = async (tableId: number, waiterId: number) => {
     try {
-      // Garson bilgilerini bul
       const selectedWaiter = servers.find(s => s.employeeId === waiterId);
       if (!selectedWaiter) {
-        throw new Error('Garson bulunamadı');
+        throw new Error('Waiter not found');
       }
 
-      // Mevcut masa bilgilerini bul
       const currentTable = tables.find(t => t.tableId === tableId);
       if (!currentTable) {
-        throw new Error('Masa bulunamadı');
+        throw new Error('Table not found');
       }
 
-      // Güncellenecek masa bilgilerini hazırla
       const updatedTable = {
         tableId,
         tableTotalCost: currentTable.tableTotalCost,
-        tableAvailable: currentTable.isTableAvailable, // Mevcut müsaitlik durumunu koru
+        tableAvailable: currentTable.isTableAvailable,
         tableWaiter: {
           employeeId: selectedWaiter.employeeId,
           employeeName: selectedWaiter.employeeName,
@@ -198,7 +192,7 @@ const TableManagement: React.FC = () => {
         }
       };
       
-      console.log('Güncellenecek masa bilgileri:', updatedTable);
+      console.log('Updating table with:', updatedTable);
       
       const response = await fetch(API_ENDPOINTS.TABLES.BY_ID(tableId), {
         method: 'PUT',
@@ -209,29 +203,27 @@ const TableManagement: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Masa güncellenirken bir hata oluştu');
+        throw new Error('Error updating table');
       }
 
       const data = await response.json();
-      console.log('Masa güncellendi:', data);
+      console.log('Table updated:', data);
       
-      await fetchTables(); // Masaları yeniden yükle
+      await fetchTables();
       setShowServerAssignment(false);
     } catch (err) {
-      setError('Garson ataması yapılırken bir hata oluştu');
-      console.error('Garson atama hatası:', err);
+      setError('Error assigning waiter');
+      console.error('Error assigning waiter:', err);
     }
   };
 
   const removeWaiter = async (tableId: number) => {
     try {
-      // Mevcut masa bilgilerini bul
       const currentTable = tables.find(t => t.tableId === tableId);
       if (!currentTable) {
-        throw new Error('Masa bulunamadı');
+        throw new Error('Table not found');
       }
 
-      // Güncellenecek masa bilgilerini hazırla (garsonu kaldır)
       const updatedTable = {
         tableId,
         tableTotalCost: currentTable.tableTotalCost,
@@ -239,7 +231,7 @@ const TableManagement: React.FC = () => {
         tableWaiter: null
       };
       
-      console.log('Garson kaldırılacak masa bilgileri:', updatedTable);
+      console.log('Removing waiter from table:', updatedTable);
       
       const response = await fetch(API_ENDPOINTS.TABLES.BY_ID(tableId), {
         method: 'PUT',
@@ -250,26 +242,25 @@ const TableManagement: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Garson kaldırılırken bir hata oluştu');
+        throw new Error('Error removing waiter');
       }
 
       const data = await response.json();
-      console.log('Masa güncellendi:', data);
+      console.log('Table updated:', data);
       
-      await fetchTables(); // Masaları yeniden yükle
-      toast.success('Garson başarıyla kaldırıldı');
+      await fetchTables();
+      toast.success('Waiter removed successfully');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Garson kaldırılırken bir hata oluştu';
+      const errorMessage = err instanceof Error ? err.message : 'Error removing waiter';
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('Garson kaldırma hatası:', err);
+      console.error('Error removing waiter:', err);
     }
   };
 
   const handleDeleteServer = async (serverId: number) => {
     try {
-      // Kullanıcıdan onay al
-      if (!window.confirm('Bu garsonu silmek istediğinizden emin misiniz?')) {
+      if (!window.confirm('Are you sure you want to delete this waiter?')) {
         return;
       }
 
@@ -279,16 +270,15 @@ const TableManagement: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Garson şuan bir masaya atanmış durumda silinemez !');
+        throw new Error(errorData.message || 'Cannot delete waiter while assigned to a table!');
       }
 
       await fetchServers();
-      toast.success('Garson başarıyla silindi');
+      toast.success('Waiter deleted successfully');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Garson silinirken bir hata oluştu';
+      const errorMessage = err instanceof Error ? err.message : 'Error deleting waiter';
       toast.error(errorMessage);
-      console.error('Garson silme hatası:', err);
-      // Hata durumunda setError'u kaldırıyoruz
+      console.error('Error deleting waiter:', err);
       setError(null);
     }
   };
@@ -297,7 +287,6 @@ const TableManagement: React.FC = () => {
     if (!editingServer) return;
 
     try {
-      // Backend'in beklediği formata uygun veri hazırlama
       const updatedServerData = {
         employeeId: editingServer.employeeId,
         employeeName: editingServer.employeeName,
@@ -305,7 +294,7 @@ const TableManagement: React.FC = () => {
         waiterTables: editingServer.waiterTables || 0
       };
 
-      console.log('Güncellenecek garson bilgileri:', updatedServerData);
+      console.log('Updating waiter with:', updatedServerData);
       console.log('API Endpoint:', API_ENDPOINTS.WAITERS.BY_ID(editingServer.employeeId));
 
       const response = await fetch(API_ENDPOINTS.WAITERS.BY_ID(editingServer.employeeId), {
@@ -327,51 +316,48 @@ const TableManagement: React.FC = () => {
       }
 
       const updatedServer = await response.json();
-      console.log('Güncellenmiş garson bilgileri:', updatedServer);
+      console.log('Updated waiter:', updatedServer);
 
-      // Güncelleme başarılı olduktan sonra garson listesini yenile
       await fetchServers();
       
-      // Modal'ı kapat ve state'i temizle
       setShowEditServer(false);
       setEditingServer(null);
       
-      toast.success('Garson bilgileri başarıyla güncellendi');
+      toast.success('Waiter information updated successfully');
     } catch (err) {
-      console.error('Tam hata detayı:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Garson güncellenirken bir hata oluştu';
+      console.error('Full error details:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error updating waiter';
       setError(errorMessage);
       toast.error(errorMessage);
     }
   };
 
-  if (loading) return <div className="container mx-auto p-4">Yükleniyor...</div>;
+  if (loading) return <div className="container mx-auto p-4">Loading...</div>;
   if (error) return <div className="container mx-auto p-4 text-red-500">{error}</div>;
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Masa Yönetimi</h2>
+        <h2 className="text-2xl font-bold">Table Management</h2>
         <div className="space-x-4">
           <button
             onClick={() => setShowAddServer(true)}
             className="px-4 py-2 bg-indigo-600 text-black rounded-md hover:bg-indigo-700 transition-colors"
           >
-            Yeni Garson Ekle
+            Add New Waiter
           </button>
           <button
             onClick={createTable}
             className="px-4 py-2 bg-emerald-600 text-black rounded-md hover:bg-emerald-700 transition-colors"
           >
-            Yeni Masa Ekle
+            Add New Table
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Table Layout */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">Masa Düzeni</h2>
+          <h2 className="text-2xl font-bold mb-4">Table Layout</h2>
           <div className="grid grid-cols-2 gap-4">
             {tables.map((table) => (
               <Card
@@ -383,30 +369,30 @@ const TableManagement: React.FC = () => {
                 }`}
                 onClick={() => handleTableClick(table)}
               >
-                <div className="text-lg font-semibold mb-2">Masa {table.tableId}</div>
+                <div className="text-lg font-semibold mb-2">Table {table.tableId}</div>
                 <div className="text-sm text-gray-600 mb-1">
-                  Toplam Tutar: {table.tableTotalCost} TL
+                  Total Amount: {table.tableTotalCost} TL
                 </div>
                 <div className={`text-sm font-medium ${
                   table.isTableAvailable ? 'text-green-700' : 'text-red-700'
                 }`}>
-                  {table.isTableAvailable ? 'Müsait' : 'Dolu'}
+                  {table.isTableAvailable ? 'Available' : 'Occupied'}
                 </div>
                 {table.tableWaiter && (
                   <div className="flex justify-between items-center mt-1">
                     <div className="text-sm text-gray-600">
-                      Garson: {table.tableWaiter.employeeName}
+                      Waiter: {table.tableWaiter.employeeName}
                     </div>
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent table click event
-                        if (window.confirm('Bu masadan garsonu kaldırmak istediğinizden emin misiniz?')) {
+                        e.stopPropagation();
+                        if (window.confirm('Are you sure you want to remove the waiter from this table?')) {
                           removeWaiter(table.tableId);
                         }
                       }}
                       className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >
-                      Garsonu Kaldır
+                      Remove Waiter
                     </button>
                   </div>
                 )}
@@ -414,11 +400,10 @@ const TableManagement: React.FC = () => {
             ))}
           </div>
 
-          {/* Server Assignment Dialog */}
           {selectedTable && showServerAssignment && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
               <Card className="w-96 p-4 bg-white">
-                <h3 className="text-lg font-semibold mb-4">Masa {selectedTable.tableId} için Garson Ata</h3>
+                <h3 className="text-lg font-semibold mb-4">Assign Waiter to Table {selectedTable.tableId}</h3>
                 <div className="space-y-2">
                   {servers.map(server => (
                     <button
@@ -434,16 +419,15 @@ const TableManagement: React.FC = () => {
                   onClick={() => setShowServerAssignment(false)}
                   className="mt-4 w-full p-2 bg-secondary text-secondary-foreground rounded-md border border-gray-300"
                 >
-                  İptal
+                  Cancel
                 </button>
               </Card>
             </div>
           )}
         </div>
 
-        {/* Server Assignment */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">Garsonlar</h2>
+          <h2 className="text-2xl font-bold mb-4">Waiters</h2>
           <div className="space-y-4">
             {servers.map((server) => (
               <Card key={server.employeeId} className="p-4 bg-white border-gray-200">
@@ -451,7 +435,7 @@ const TableManagement: React.FC = () => {
                   <div>
                     <div className="font-semibold text-lg mb-2">{server.employeeName}</div>
                     <div className="text-sm text-gray-600">
-                      Maaş: {server.employeeSalary} TL
+                      Salary: {server.employeeSalary} TL
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -462,13 +446,13 @@ const TableManagement: React.FC = () => {
                       }}
                       className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                     >
-                      Düzenle
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDeleteServer(server.employeeId)}
                       className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
                     >
-                      Sil
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -478,30 +462,29 @@ const TableManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Server Dialog */}
       {showAddServer && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
           <Card className="w-96 p-4 bg-white">
-            <h3 className="text-lg font-semibold mb-4">Yeni Garson Ekle</h3>
+            <h3 className="text-lg font-semibold mb-4">Add New Waiter</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Garson Adı</label>
+                <label className="block text-sm font-medium mb-1">Waiter Name</label>
                 <input
                   type="text"
                   value={newServer.employeeName}
                   onChange={(e) => setNewServer({ ...newServer, employeeName: e.target.value })}
                   className="w-full p-2 border rounded-md"
-                  placeholder="Garson adını girin"
+                  placeholder="Enter waiter name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Maaş</label>
+                <label className="block text-sm font-medium mb-1">Salary</label>
                 <input
                   type="number"
                   value={newServer.employeeSalary}
                   onChange={(e) => setNewServer({ ...newServer, employeeSalary: Number(e.target.value) })}
                   className="w-full p-2 border rounded-md"
-                  placeholder="Maaş miktarını girin"
+                  placeholder="Enter salary amount"
                 />
               </div>
               <div className="flex space-x-2">
@@ -509,13 +492,13 @@ const TableManagement: React.FC = () => {
                   onClick={handleAddServer}
                   className="flex-1 p-2 bg-blue-500 text-black rounded-md hover:bg-blue-600"
                 >
-                  Ekle
+                  Add
                 </button>
                 <button
                   onClick={() => setShowAddServer(false)}
                   className="flex-1 p-2 bg-gray-500 text-black rounded-md hover:bg-gray-600"
                 >
-                  İptal
+                  Cancel
                 </button>
               </div>
             </div>
@@ -523,30 +506,29 @@ const TableManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Edit Server Dialog */}
       {showEditServer && editingServer && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
           <Card className="w-96 p-4 bg-white">
-            <h3 className="text-lg font-semibold mb-4">Garson Bilgilerini Düzenle</h3>
+            <h3 className="text-lg font-semibold mb-4">Edit Waiter Information</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Garson Adı</label>
+                <label className="block text-sm font-medium mb-1">Waiter Name</label>
                 <input
                   type="text"
                   value={editingServer.employeeName}
                   onChange={(e) => setEditingServer({ ...editingServer, employeeName: e.target.value })}
                   className="w-full p-2 border rounded-md"
-                  placeholder="Garson adını girin"
+                  placeholder="Enter waiter name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Güncellenmiş Maaş</label>
+                <label className="block text-sm font-medium mb-1">Updated Salary</label>
                 <input
                   type="number"
                   value={editingServer.employeeSalary}
                   onChange={(e) => setEditingServer({ ...editingServer, employeeSalary: Number(e.target.value) })}
                   className="w-full p-2 border rounded-md"
-                  placeholder="Yeni maaş miktarını girin"
+                  placeholder="Enter new salary amount"
                 />
               </div>
               <div className="flex space-x-2">
@@ -554,7 +536,7 @@ const TableManagement: React.FC = () => {
                   onClick={handleEditServer}
                   className="flex-1 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 >
-                  Güncelle
+                  Update
                 </button>
                 <button
                   onClick={() => {
@@ -563,7 +545,7 @@ const TableManagement: React.FC = () => {
                   }}
                   className="flex-1 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
                 >
-                  İptal
+                  Cancel
                 </button>
               </div>
             </div>

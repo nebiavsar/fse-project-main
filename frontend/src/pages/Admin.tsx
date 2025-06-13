@@ -199,9 +199,7 @@ const Admin: React.FC = () => {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Admin Panel</h1>
-        <Button onClick={handleLogout} variant="outline">
-          Logout
-        </Button>
+        
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
