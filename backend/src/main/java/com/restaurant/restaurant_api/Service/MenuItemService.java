@@ -19,12 +19,12 @@ public class MenuItemService {
     private OrderRepository orderRepository;
 
     public List<MenuItem> getAllMenuItems() {
-        return menuItemRepository.findAll();
+        return menuItemRepository.findByIsActiveTrue();
     }
 
     public MenuItem getMenuItemById(int id) {
         MenuItem menuItem = menuItemRepository.findById(id);
-        if (menuItem == null) {
+        if (menuItem == null || !menuItem.isActive()) {
             throw new RuntimeException("Menu item not found");
         }
         return menuItem;
@@ -34,6 +34,7 @@ public class MenuItemService {
         if (menuItem.getMenuItemStock() < 0) {
             throw new RuntimeException("Stock cannot be negative");
         }
+        menuItem.setActive(true);
         return menuItemRepository.save(menuItem);
     }
 
@@ -44,6 +45,8 @@ public class MenuItemService {
         if (menuItem.getMenuItemStock() < 0) {
             throw new RuntimeException("Stock cannot be negative");
         }
+        MenuItem existingItem = menuItemRepository.findById(menuItem.getMenuItemId());
+        menuItem.setActive(existingItem.isActive());
         return menuItemRepository.save(menuItem);
     }
 
@@ -53,22 +56,17 @@ public class MenuItemService {
             throw new RuntimeException("Menu item not found");
         }
         try {
-            // First, remove the menu item from all orders
-            List<Order> orders = orderRepository.findAll();
-            for (Order order : orders) {
-                if (order.getOrderMenuItems().remove(menuItem)) {
-                    orderRepository.save(order);
-                }
-            }
-            // Then delete the menu item
-            menuItemRepository.deleteById(id);
+            menuItem.setActive(false);
+            menuItemRepository.save(menuItem);
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete menu item: " + e.getMessage());
         }
     }
 
     public List<MenuItem> getMenuItemByCategory(String category) {
-        return menuItemRepository.findByMenuItemCategory(category);
+        return menuItemRepository.findByMenuItemCategory(category).stream()
+                .filter(MenuItem::isActive)
+                .toList();
     }
 
     public MenuItem updateStock(int id, int quantity) {

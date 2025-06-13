@@ -23,10 +23,12 @@ public class MenuItem {
     private String menuItemCategory;
     @Column(name = "menu_item_stock", nullable = false)
     private int menuItemStock;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 
     public MenuItem() {}
 
-    public MenuItem(int menuItemId, String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory, int menuItemStock) {
+    public MenuItem(int menuItemId, String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory, int menuItemStock, boolean isActive) {
         this.menuItemId = menuItemId;
         this.menuItemName = menuItemName;
         this.menuItemDesc = menuItemDesc;
@@ -34,15 +36,17 @@ public class MenuItem {
         this.menuItemPic = menuItemPic;
         this.menuItemCategory = menuItemCategory;
         this.menuItemStock = menuItemStock;
+        this.isActive = isActive;
     }
 
-    public MenuItem(String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory, int menuItemStock) {
+    public MenuItem(String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory, int menuItemStock, boolean isActive) {
         this.menuItemName = menuItemName;
         this.menuItemDesc = menuItemDesc;
         this.menuItemPrice = menuItemPrice;
         this.menuItemPic = menuItemPic;
         this.menuItemCategory = menuItemCategory;
         this.menuItemStock = menuItemStock;
+        this.isActive = isActive;
     }
 
     public int getMenuItemId() {
@@ -101,6 +105,14 @@ public class MenuItem {
         this.menuItemStock = menuItemStock;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     @Override
     public String toString() {
         return "MenuItem{" +
@@ -111,6 +123,7 @@ public class MenuItem {
                 ", menuItemPic='" + menuItemPic + '\'' +
                 ", menuItemCategory='" + menuItemCategory + '\'' +
                 ", menuItemStock=" + menuItemStock +
+                ", isActive=" + isActive +
                 '}';
     }
 }

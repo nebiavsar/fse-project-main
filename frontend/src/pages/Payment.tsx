@@ -25,17 +25,17 @@ const Payment = () => {
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
-    // Cart sayfasından gelen sipariş bilgisini al
+    // Get order information from Cart page
     const orderFromCart = location.state?.order;
     if (orderFromCart) {
-      console.log('Cart sayfasından gelen sipariş:', orderFromCart);
+      console.log('Order from Cart page:', orderFromCart);
       setOrder(orderFromCart);
       setLoading(false);
     } else {
-      // Eğer state'ten sipariş gelmediyse, API'den al
+      // If no order from state, get from API
       const tableId = params.tableId;
       if (!tableId) {
-        toast.error('Masa ID bulunamadı');
+        toast.error('Table ID not found');
         navigate('/cart');
         return;
       }
@@ -52,12 +52,12 @@ const Payment = () => {
           if (tableOrder) {
             setOrder(tableOrder);
           } else {
-            toast.error('Bu masa için bekleyen sipariş bulunamadı');
+            toast.error('No pending order found for this table');
             navigate('/cart');
           }
         } catch (error) {
-          console.error('Sipariş yüklenirken hata:', error);
-          toast.error('Sipariş yüklenirken bir hata oluştu');
+          console.error('Error loading order:', error);
+          toast.error('An error occurred while loading the order');
           navigate('/cart');
         } finally {
           setLoading(false);
@@ -72,25 +72,25 @@ const Payment = () => {
     if (!order) return;
     
     try {
-      // Ödemeyi tamamla
+      // Complete payment
       await axios.put(`${API_ENDPOINTS.ORDERS.BY_ID(order.orderId)}`, {
         orderStatue: 3, // PAID
         paymentMethod: paymentMethod,
         cardDetails: paymentMethod === 'card' ? cardDetails : null
       });
 
-      // Masa durumunu güncelle
+      // Update table status
       await axios.put(`${API_ENDPOINTS.TABLES.BY_ID(order.orderTable.tableId)}`, {
         tableId: order.orderTable.tableId,
         tableAvailable: true,
         tableTotalCost: 0
       });
 
-      toast.success('Ödeme başarıyla tamamlandı');
+      toast.success('Payment completed successfully');
       navigate('/cart');
     } catch (error) {
-      console.error('Ödeme işlemi sırasında hata:', error);
-      toast.error('Ödeme işlemi başarısız oldu');
+      console.error('Error during payment process:', error);
+      toast.error('Payment process failed');
     }
   };
 
@@ -123,22 +123,22 @@ const Payment = () => {
     return acc;
   }, {});
 
-  // Kredi kartı formu
+  // Credit card form
   if (showCardForm) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Kredi Kartı Bilgileri</CardTitle>
+            <CardTitle className="text-2xl">Credit Card Information</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCardSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Ad</label>
+                  <label className="block text-sm font-medium mb-1">First Name</label>
                   <input
                     type="text"
-                    placeholder="Ad"
+                    placeholder="First Name"
                     className="w-full p-2 border rounded-md"
                     value={cardDetails.firstName}
                     onChange={(e) => setCardDetails({...cardDetails, firstName: e.target.value})}
@@ -146,10 +146,10 @@ const Payment = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Soyad</label>
+                  <label className="block text-sm font-medium mb-1">Last Name</label>
                   <input
                     type="text"
-                    placeholder="Soyad"
+                    placeholder="Last Name"
                     className="w-full p-2 border rounded-md"
                     value={cardDetails.lastName}
                     onChange={(e) => setCardDetails({...cardDetails, lastName: e.target.value})}
@@ -158,7 +158,7 @@ const Payment = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Kart Numarası</label>
+                <label className="block text-sm font-medium mb-1">Card Number</label>
                 <input
                   type="text"
                   maxLength={16}
@@ -171,7 +171,7 @@ const Payment = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Son Kullanma Tarihi</label>
+                  <label className="block text-sm font-medium mb-1">Expiry Date</label>
                   <input
                     type="text"
                     maxLength={5}
@@ -199,7 +199,7 @@ const Payment = () => {
                 type="submit"
                 className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
               >
-                Ödemeyi Tamamla
+                Complete Payment
               </button>
             </form>
           </CardContent>
@@ -208,26 +208,26 @@ const Payment = () => {
     );
   }
 
-  // Nakit ödeme onay formu
+  // Cash payment confirmation form
   if (showCashConfirmation) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Nakit Ödeme Onayı</CardTitle>
+            <CardTitle className="text-2xl">Cash Payment Confirmation</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div className="text-center">
-                <p className="text-lg mb-4">Toplam Tutar: <span className="font-bold text-primary">{order.orderPrice} TL</span></p>
-                <p className="text-gray-600 mb-6">Lütfen ödemeyi aldıktan sonra onaylayın.</p>
+                <p className="text-lg mb-4">Total Amount: <span className="font-bold text-primary">{order.orderPrice} TL</span></p>
+                <p className="text-gray-600 mb-6">Please confirm after receiving the payment.</p>
               </div>
               <div className="flex gap-4">
                 <button
                   onClick={() => setShowCashConfirmation(false)}
                   className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-md transition-colors text-lg font-semibold hover:bg-gray-300"
                 >
-                  Geri Dön
+                  Go Back
                 </button>
                 <button
                   onClick={() => {
@@ -236,7 +236,7 @@ const Payment = () => {
                   }}
                   className="flex-1 bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
                 >
-                  Nakit Olarak Ödendi
+                  Paid in Cash
                 </button>
               </div>
             </div>
@@ -250,12 +250,12 @@ const Payment = () => {
     <div className="container mx-auto py-8 px-4 max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Masa {order.orderTable.tableId} - Sipariş Detayı</CardTitle>
+          <CardTitle className="text-2xl">Table {order.orderTable.tableId} - Order Details</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Sipariş İçeriği</h3>
+              <h3 className="text-lg font-semibold border-b pb-2">Order Contents</h3>
               {Object.values(groupedItems).map(({ item, count }) => (
                 <div key={item.menuItemId} className="flex justify-between items-center">
                   <div className="flex-1">
@@ -265,14 +265,14 @@ const Payment = () => {
                   <div className="text-right">
                     <span className="font-medium">{item.menuItemPrice} TL</span>
                     <div className="text-sm text-gray-500">
-                      Toplam: {(item.menuItemPrice * count).toFixed(2)} TL
+                      Total: {(item.menuItemPrice * count).toFixed(2)} TL
                     </div>
                   </div>
                 </div>
               ))}
               <div className="pt-4 border-t mt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Genel Toplam</span>
+                  <span className="text-lg font-semibold">Grand Total</span>
                   <span className="text-xl font-bold text-primary">{order.orderPrice} TL</span>
                 </div>
               </div>
@@ -283,11 +283,11 @@ const Payment = () => {
                 onClick={handlePayment}
                 className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
               >
-                Ödemeyi Tamamla
+                Complete Payment
               </button>
             ) : (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Ödeme Yöntemi Seçin</h3>
+                <h3 className="text-lg font-semibold">Select Payment Method</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setShowCashConfirmation(true)}
@@ -295,7 +295,7 @@ const Payment = () => {
                   >
                     <div className="text-center">
                       <span className="text-2xl">💵</span>
-                      <p className="mt-2 font-medium">Nakit</p>
+                      <p className="mt-2 font-medium">Cash</p>
                     </div>
                   </button>
                   <button
@@ -307,7 +307,7 @@ const Payment = () => {
                   >
                     <div className="text-center">
                       <span className="text-2xl">💳</span>
-                      <p className="mt-2 font-medium">Kredi Kartı</p>
+                      <p className="mt-2 font-medium">Credit Card</p>
                     </div>
                   </button>
                 </div>

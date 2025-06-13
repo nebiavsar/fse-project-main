@@ -22,33 +22,29 @@ const Menu: React.FC = () => {
 
   const fetchTables = async () => {
     try {
-      // Masaları getir
       const tablesResponse = await fetch(API_ENDPOINTS.TABLES.BASE);
       if (!tablesResponse.ok) throw new Error('Failed to fetch tables');
       const tablesData = await tablesResponse.json();
 
-      // Aktif siparişleri getir
       const ordersResponse = await fetch(API_ENDPOINTS.ORDERS.BASE);
       if (!ordersResponse.ok) throw new Error('Failed to fetch orders');
       const ordersData = await ordersResponse.json();
 
-      // Her masa için aktif sipariş kontrolü yap
       const transformed: Table[] = tablesData.map((table: any) => {
-        // Masaya ait aktif sipariş var mı kontrol et
         const hasActiveOrder = ordersData.some((order: any) => 
           order.orderTable.tableId === table.tableId && 
-          order.orderStatue !== 2 && order.orderStatue !== 3 // 2: tamamlandı, 3: ödendi
+          order.orderStatue !== 2 && order.orderStatue !== 3
         );
 
         return {
           tableId: table.tableId,
           tableTotalCost: table.tableTotalCost,
-          isTableAvailable: !hasActiveOrder && table.tableAvailable, // Hem aktif sipariş yoksa hem de masa müsaitse
+          isTableAvailable: !hasActiveOrder && table.tableAvailable,
           tableWaiter: table.tableWaiter
         };
       });
       
-      console.log('İşlenmiş masalar:', transformed);
+      console.log('Processed tables:', transformed);
       setTables(transformed);
     } catch (error) {
       console.error('Error fetching tables:', error);
@@ -84,23 +80,21 @@ const Menu: React.FC = () => {
 
   const handleCheckout = async () => {
     if (!selectedTable) {
-      alert('Lütfen bir masa seçin');
+      alert('Please select a table');
       return;
     }
 
     try {
-      // Stok kontrolü yap
       for (const item of cartItems) {
         const menuItem = menuItems.find(m => m.menuItemId === item.menuItem.menuItemId);
         if (!menuItem) {
-          throw new Error(`${item.menuItem.menuItemName} ürünü bulunamadı`);
+          throw new Error(`Product ${item.menuItem.menuItemName} not found`);
         }
         if (menuItem.menuItemStock < item.quantity) {
-          throw new Error(`${item.menuItem.menuItemName} ürününden yeterli stok yok. Mevcut stok: ${menuItem.menuItemStock}`);
+          throw new Error(`Insufficient stock for ${item.menuItem.menuItemName}. Current stock: ${menuItem.menuItemStock}`);
         }
       }
 
-      // Sepetteki her öğeyi quantity kadar tekrarla
       const expandedOrderItems = cartItems.flatMap(item => 
         Array(item.quantity).fill({
           menuItemId: item.menuItem.menuItemId
@@ -112,7 +106,7 @@ const Menu: React.FC = () => {
           tableId: selectedTable
         },
         orderPrice: totalPrice,
-        orderStatue: 0, // 0: pending, 1: preparing, 2: completed
+        orderStatue: 0,
         orderMenuItems: expandedOrderItems,
         customer: localStorage.getItem('customerId') ? {
           customerId: parseInt(localStorage.getItem('customerId')!)
@@ -128,13 +122,12 @@ const Menu: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Sipariş oluşturulamadı');
+        throw new Error('Failed to create order');
       }
 
       const responseData = await response.json();
-      console.log('Sipariş başarıyla oluşturuldu:', responseData);
+      console.log('Order created successfully:', responseData);
 
-      // Stok miktarlarını güncelle
       for (const item of cartItems) {
         const updateStockResponse = await fetch(`${API_ENDPOINTS.MENU_ITEMS.BASE}/${item.menuItem.menuItemId}/stock?quantity=-${item.quantity}`, {
           method: 'PUT',
@@ -144,11 +137,10 @@ const Menu: React.FC = () => {
         });
 
         if (!updateStockResponse.ok) {
-          throw new Error(`${item.menuItem.menuItemName} ürününün stok güncellemesi başarısız oldu`);
+          throw new Error(`Failed to update stock for ${item.menuItem.menuItemName}`);
         }
       }
 
-      // Masa durumunu güncelle
       const tableResponse = await fetch(`${API_ENDPOINTS.TABLES.BY_ID(selectedTable)}`, {
         method: 'PUT',
         headers: {
@@ -163,20 +155,15 @@ const Menu: React.FC = () => {
       });
 
       if (!tableResponse.ok) {
-        throw new Error('Masa durumu güncellenemedi');
+        throw new Error('Failed to update table status');
       }
 
-      // Sepeti temizle
       clearCart();
-      
-      // Menü öğelerini yeniden yükle
       await fetchMenuItems();
-      
-      // Ana sayfaya yönlendir
       navigate('/');
     } catch (error) {
-      console.error('Sipariş oluşturulurken hata:', error);
-      alert(error instanceof Error ? error.message : 'Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error('Error creating order:', error);
+      alert(error instanceof Error ? error.message : 'An error occurred while creating the order. Please try again.');
     }
   };
 
@@ -186,17 +173,15 @@ const Menu: React.FC = () => {
 
   const handleAddToCart = (item: MenuItem) => {
     if (item.menuItemStock === 0) {
-      toast.error('Bu ürünün stokta kalmadı!');
+      toast.error('This product is out of stock!');
       return;
     }
 
-    // Mevcut sepetteki miktarı bul
     const currentCartItem = cartItems.find(cartItem => cartItem.menuItem.menuItemId === item.menuItemId);
     const currentQuantity = currentCartItem ? currentCartItem.quantity : 0;
 
-    // Eğer yeni miktar stoktan fazlaysa uyarı ver
     if (currentQuantity + 1 > item.menuItemStock) {
-      toast.error(`En fazla ${item.menuItemStock} adet sipariş verebilirsiniz!`);
+      toast.error(`You can order maximum ${item.menuItemStock} items!`);
       return;
     }
 
@@ -208,21 +193,20 @@ const Menu: React.FC = () => {
     if (!menuItem) return;
 
     if (newQuantity > menuItem.menuItemStock) {
-      toast.error(`En fazla ${menuItem.menuItemStock} adet sipariş verebilirsiniz!`);
+      toast.error(`You can order maximum ${menuItem.menuItemStock} items!`);
       return;
     }
 
     updateQuantity(itemId, newQuantity);
   };
 
-  // Masa seçim dialogu
   if (showTableDialog) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
         <Card className="w-[800px] p-8 bg-white">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold mb-2">Masa Seçimi</CardTitle>
-            <CardDescription className="text-lg">Lütfen sipariş vermek istediğiniz masayı seçin</CardDescription>
+            <CardTitle className="text-2xl font-bold mb-2">Table Selection</CardTitle>
+            <CardDescription className="text-lg">Please select a table for your order</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 gap-4">
@@ -237,9 +221,9 @@ const Menu: React.FC = () => {
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed border-2 border-gray-300'
                   }`}
                 >
-                  <div className="text-2xl font-bold mb-1">Masa {table.tableId}</div>
+                  <div className="text-2xl font-bold mb-1">Table {table.tableId}</div>
                   {!table.isTableAvailable && (
-                    <div className="text-sm font-medium">Dolu</div>
+                    <div className="text-sm font-medium">Occupied</div>
                   )}
                 </button>
               ))}
@@ -251,7 +235,7 @@ const Menu: React.FC = () => {
               }}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
-              Kapat
+              Close
             </button>
           </CardContent>
         </Card>
@@ -265,14 +249,14 @@ const Menu: React.FC = () => {
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Restaurant Menu</h1>
           <span className="text-lg text-gray-600">
-            Masa {selectedTable}
+            Table {selectedTable}
           </span>
         </div>
         <button
           onClick={toggleCart}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-md hover:bg-primary/90"
         >
-          {isCartOpen ? 'Sepeti Gizle' : 'Sepeti Göster'}
+          {isCartOpen ? 'Hide Cart' : 'Show Cart'}
           <span className="bg-white text-black rounded-full w-6 h-6 flex items-center justify-center text-sm">
             {cartItems.length}
           </span>
@@ -280,7 +264,6 @@ const Menu: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Menu Section */}
         <div className={isCartOpen ? 'lg:col-span-2' : 'lg:col-span-3'}>
           <div className={`grid grid-cols-1 ${isCartOpen ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'} gap-6`}>
             {menuItems.map((item) => (
@@ -309,18 +292,17 @@ const Menu: React.FC = () => {
                     <div>
                       <span className="text-lg font-medium">{item.menuItemPrice.toFixed(2)} TL</span>
                       <span className="text-sm text-gray-500 ml-2">{item.menuItemCategory}</span>
-                      
                     </div>
                     {item.menuItemStock === 0 ? (
                       <div className="px-4 py-2 bg-red-100 text-red-600 rounded-md">
-                        Ürün Yok
+                        Out of Stock
                       </div>
                     ) : (
                       <button
                         onClick={() => handleAddToCart(item)}
                         className="px-4 py-2 bg-primary text-black rounded-md hover:bg-primary/90"
                       >
-                        Sepete Ekle
+                        Add to Cart
                       </button>
                     )}
                   </div>
@@ -330,14 +312,13 @@ const Menu: React.FC = () => {
           </div>
         </div>
 
-        {/* Cart Section */}
         {isCartOpen && (
           <div className="lg:col-span-1">
             <Card className="sticky top-8">
               <CardHeader>
-                <CardTitle>Sepetiniz</CardTitle>
+                <CardTitle>Your Cart</CardTitle>
                 {cartItems.length === 0 && (
-                  <CardDescription>Sepetiniz boş</CardDescription>
+                  <CardDescription>Your cart is empty</CardDescription>
                 )}
               </CardHeader>
               <CardContent>
@@ -347,7 +328,6 @@ const Menu: React.FC = () => {
                       <div className="flex-1">
                         <p className="font-medium">{item.menuItem.menuItemName}</p>
                         <p className="text-sm text-gray-500">{item.menuItem.menuItemPrice.toFixed(2)} TL</p>
-                        
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -378,10 +358,10 @@ const Menu: React.FC = () => {
                     onClick={handleCheckout}
                     className="px-4 py-2 bg-blue-600 text-black rounded-md hover:bg-blue-700 transition-colors"
                   >
-                    Siparişi Gönder
+                    Place Order
                   </button>
                   <div className="text-xl font-bold">
-                    Toplam: {totalPrice} TL
+                    Total: {totalPrice} TL
                   </div>
                 </div>
               </CardContent>

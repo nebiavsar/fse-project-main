@@ -52,6 +52,7 @@ const Header = () => {
                 <Link to="/" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Home</Link>
                 <Link to="/menu" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Menu</Link>
                 <Link to="/profile" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Profile</Link>
+                <Link to="/kitchen" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Kitchen</Link>
               </>
             )}
           </div>

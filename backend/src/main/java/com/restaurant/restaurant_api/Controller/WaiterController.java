@@ -41,10 +41,10 @@ public class WaiterController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PutMapping("/{waiterId}")
+    @PutMapping("/{employeeId}")
     public ResponseEntity<Waiter> putAWaiter(@PathVariable int employeeId, @RequestBody Waiter waiter) {
         if (waiter != null) {
-            return new ResponseEntity<>(getWaiterService().putByEmployeeId(employeeId, waiter), HttpStatus.CREATED);
+            return new ResponseEntity<>(getWaiterService().putByEmployeeId(employeeId, waiter), HttpStatus.OK);
         }
         return new ResponseEntity<>(new Waiter(), HttpStatus.BAD_REQUEST);
     }

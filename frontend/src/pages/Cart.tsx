@@ -23,8 +23,8 @@ const Cart: React.FC = () => {
       const occupiedTables = response.data.filter((table: Table) => !table.tableAvailable);
       setTables(occupiedTables);
     } catch (error) {
-      console.error('Masalar yüklenirken hata:', error);
-      toast.error('Masalar yüklenirken bir hata oluştu');
+      console.error('Error loading tables:', error);
+      toast.error('An error occurred while loading tables');
     }
   };
 
@@ -36,8 +36,8 @@ const Cart: React.FC = () => {
       );
       setOrders(pendingOrders);
     } catch (error) {
-      console.error('Siparişler yüklenirken hata:', error);
-      toast.error('Siparişler yüklenirken bir hata oluştu');
+      console.error('Error loading orders:', error);
+      toast.error('An error occurred while loading orders');
     }
   };
 
@@ -48,14 +48,14 @@ const Cart: React.FC = () => {
     );
 
     if (tableOrder) {
-      console.log('Ödeme sayfasına yönlendiriliyor:', tableOrder);
+      console.log('Redirecting to payment page:', tableOrder);
       navigate(`/payment/${tableId}`, { state: { order: tableOrder } });
     } else {
-      toast.error('Bu masa için bekleyen sipariş bulunamadı');
+      toast.error('No pending order found for this table');
     }
   };
 
-  // Giriş yapmış kullanıcı için sadece kendi masalarını filtrele
+  // Filter tables for logged-in user
   const filteredTables = customerId
     ? tables.filter(table => {
         const tableOrder = orders.find(order => 
@@ -70,13 +70,13 @@ const Cart: React.FC = () => {
     return (
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8">
-          {customerId ? 'Siparişlerim' : 'Ödeme Bekleyen Masalar'}
+          {customerId ? 'My Orders' : 'Tables Pending Payment'}
         </h1>
         <div className="text-center py-12">
           <p className="text-gray-500">
             {customerId 
-              ? 'Şu anda bekleyen siparişiniz bulunmuyor.'
-              : 'Şu anda ödeme bekleyen masa bulunmuyor.'}
+              ? 'You have no pending orders at the moment.'
+              : 'There are no tables pending payment at the moment.'}
           </p>
         </div>
       </div>
@@ -86,7 +86,7 @@ const Cart: React.FC = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">
-        {customerId ? 'Siparişlerim' : 'Ödeme Bekleyen Masalar'}
+        {customerId ? 'My Orders' : 'Tables Pending Payment'}
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTables.map((table) => {
@@ -99,22 +99,22 @@ const Cart: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h2 className="text-xl font-semibold">Masa {table.tableId}</h2>
-                    <p className="text-gray-600">Toplam Tutar: {table.tableTotalCost} TL</p>
+                    <h2 className="text-xl font-semibold">Table {table.tableId}</h2>
+                    <p className="text-gray-600">Total Amount: {table.tableTotalCost} TL</p>
                     {tableOrder && (
                       <p className="text-sm text-gray-500">
-                        Sipariş Durumu: {tableOrder.orderStatue === 2 ? 'Hazır' : 'Hazırlanıyor'}
+                        Order Status: {tableOrder.orderStatue === 2 ? 'Ready' : 'Preparing'}
                       </p>
                     )}
                   </div>
-                  <span className="text-lg font-bold text-red-600">Ödeme Bekliyor</span>
+                  <span className="text-lg font-bold text-red-600">Payment Pending</span>
                 </div>
                 <div className="mt-8">
                   <button
                     onClick={() => handlePayment(table.tableId)}
                     className="w-full bg-primary text-black py-3 px-6 rounded-md transition-colors text-lg font-semibold border-2 border-orange-500 hover:bg-orange-500 hover:text-white"
                   >
-                    Ödeme Yap
+                    Make Payment
                   </button>
                 </div>
               </CardContent>

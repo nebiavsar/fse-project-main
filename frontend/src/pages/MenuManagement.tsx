@@ -132,16 +132,19 @@ const MenuManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to remove this item from the menu?')) {
+      return;
+    }
     try {
       await axios.delete(`http://localhost:8081/api/menu-items/${id}`);
-      toast.success('Menu item deleted successfully');
+      toast.success('Menu item removed successfully');
       fetchMenuItems();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data || 'Failed to delete menu item';
+        const errorMessage = error.response?.data || 'Failed to remove menu item';
         toast.error(errorMessage);
       } else {
-        toast.error('Failed to delete menu item');
+        toast.error('Failed to remove menu item');
       }
     }
   };
@@ -240,7 +243,7 @@ const MenuManagement: React.FC = () => {
             <TableRow key={item.menuItemId}>
               <TableCell>{item.menuItemName}</TableCell>
               <TableCell>{item.menuItemDesc}</TableCell>
-              <TableCell>${item.menuItemPrice}</TableCell>
+              <TableCell>{item.menuItemPrice} TL</TableCell>
               <TableCell>{item.menuItemCategory}</TableCell>
               <TableCell>{item.menuItemStock}</TableCell>
               <TableCell>

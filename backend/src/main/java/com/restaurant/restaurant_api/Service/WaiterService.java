@@ -25,9 +25,9 @@ public class WaiterService {
 
     public List<Waiter> getWaiterById(int employeeId) {
         if (getValidation().isIdValid(employeeId)) {
-            Waiter waiter = getWaiterRepository().findById(employeeId);
-            if (waiter == null) throw new NoSuchElementException("waiter is not found");
-            return List.of(waiter);
+            return getWaiterRepository().findById(employeeId)
+                .map(waiter -> List.of(waiter))
+                .orElseThrow(() -> new NoSuchElementException("waiter is not found"));
         }
         throw new IllegalArgumentException("employeeId cannot be equal or lower than 0");
     }
@@ -48,14 +48,14 @@ public class WaiterService {
 
     public Waiter putByEmployeeId(int employeeId, Waiter waiter) {
         if (getValidation().isIdValid(employeeId)) {
-            Waiter oldWaiter = getWaiterRepository().findById(employeeId);
-            if (oldWaiter != null) {
-                oldWaiter.setWaiterTables(waiter.getWaiterTables());
-                oldWaiter.setEmployeeName(waiter.getEmployeeName());
-                oldWaiter.setEmployeeSalary(waiter.getEmployeeSalary());
-                return getWaiterRepository().save(oldWaiter);
-            }
-            throw new NoSuchElementException("waiter is not found");
+            return getWaiterRepository().findById(employeeId)
+                .map(oldWaiter -> {
+                    oldWaiter.setWaiterTables(waiter.getWaiterTables());
+                    oldWaiter.setEmployeeName(waiter.getEmployeeName());
+                    oldWaiter.setEmployeeSalary(waiter.getEmployeeSalary());
+                    return getWaiterRepository().save(oldWaiter);
+                })
+                .orElseThrow(() -> new NoSuchElementException("waiter is not found"));
         }
         throw new IllegalArgumentException("employeeId cannot be equal or lower than 0");
     }

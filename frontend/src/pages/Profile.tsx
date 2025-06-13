@@ -23,14 +23,14 @@ const Profile: React.FC = () => {
   const fetchOrders = async () => {
     try {
       const response = await axios.get(API_ENDPOINTS.ORDERS.BASE);
-      // Sadece ödenmiş siparişleri filtrele (orderStatue === 3)
+      // Filter only paid orders (orderStatue === 3)
       const paidOrders = response.data.filter((order: any) => 
         order.customer?.customerId === parseInt(customerId!) && 
         order.orderStatue === 3
       );
       setOrders(paidOrders);
     } catch (error) {
-      console.error('Siparişler yüklenirken hata:', error);
+      console.error('Error loading orders:', error);
     }
   };
 
@@ -42,16 +42,13 @@ const Profile: React.FC = () => {
     <div className="container mx-auto py-8 px-4">
       <Card className="max-w-2xl mx-auto mb-8">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Profil Bilgileri</CardTitle>
+          <CardTitle className="text-2xl font-bold">Profile Information</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            
             <div>
-              <h3 className="text-lg font-semibold">Kullanıcı ID</h3>
-              <p className="text-gray-600">{customerId}</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">İsim</h3>
+              <h3 className="text-lg font-semibold">Name</h3>
               <p className="text-gray-600">{customerName}</p>
             </div>
           </div>
@@ -60,20 +57,20 @@ const Profile: React.FC = () => {
 
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Geçmiş Siparişlerim</CardTitle>
+          <CardTitle className="text-2xl font-bold">Order History</CardTitle>
         </CardHeader>
         <CardContent>
           {orders.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">Henüz ödenmiş siparişiniz bulunmuyor.</p>
+            <p className="text-gray-500 text-center py-4">You have no paid orders yet.</p>
           ) : (
             <div className="space-y-4">
               {orders.map((order) => (
                 <Card key={order.orderId} className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold">Masa {order.orderTable.tableId}</h3>
+                      <h3 className="font-semibold">Table {order.orderTable.tableId}</h3>
                       <div className="mt-2">
-                        <h4 className="font-medium">Sipariş İçeriği:</h4>
+                        <h4 className="font-medium">Order Contents:</h4>
                         <ul className="list-disc list-inside text-sm text-gray-600">
                           {Object.entries(
                             order.orderMenuItems.reduce((acc: { [key: string]: { count: number; price: number; name: string } }, item: any) => {
@@ -95,7 +92,7 @@ const Profile: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">{order.orderPrice} TL</p>
-                      <p className="text-sm text-green-600">Ödendi</p>
+                      <p className="text-sm text-green-600">Paid</p>
                     </div>
                   </div>
                 </Card>

@@ -13,5 +13,7 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Integer> {
     MenuItem findById(int menuItemId);
 
     List<MenuItem> findByMenuItemCategory(String category);
+
+    List<MenuItem> findByIsActiveTrue();
 }
 

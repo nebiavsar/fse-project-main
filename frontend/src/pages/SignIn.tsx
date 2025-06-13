@@ -25,9 +25,9 @@ const SignIn: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Şifre kontrolü
+    // Password check
     if (formData.customerPassword !== formData.confirmPassword) {
-      toast.error('Şifreler eşleşmiyor!');
+      toast.error('Passwords do not match!');
       return;
     }
 
@@ -45,14 +45,14 @@ const SignIn: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success('Hesabınız başarıyla oluşturuldu!');
+        toast.success('Your account has been created successfully!');
         navigate('/login');
       } else {
         const error = await response.text();
-        toast.error(error || 'Hesap oluşturulurken bir hata oluştu!');
+        toast.error(error || 'An error occurred while creating the account!');
       }
     } catch (error) {
-      toast.error('Bir hata oluştu. Lütfen tekrar deneyin.');
+      toast.error('An error occurred. Please try again.');
     }
   };
 
@@ -60,13 +60,13 @@ const SignIn: React.FC = () => {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-100 p-4">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Hesap Oluştur</CardTitle>
+          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="customerName" className="text-sm font-medium">
-                Ad Soyad
+                Full Name
               </label>
               <Input
                 id="customerName"
@@ -74,13 +74,13 @@ const SignIn: React.FC = () => {
                 type="text"
                 value={formData.customerName}
                 onChange={handleChange}
-                placeholder="Adınızı ve soyadınızı girin"
+                placeholder="Enter your full name"
                 required
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="customerEmail" className="text-sm font-medium">
-                E-posta
+                Email
               </label>
               <Input
                 id="customerEmail"
@@ -88,13 +88,13 @@ const SignIn: React.FC = () => {
                 type="email"
                 value={formData.customerEmail}
                 onChange={handleChange}
-                placeholder="E-posta adresinizi girin"
+                placeholder="Enter your email address"
                 required
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="customerPassword" className="text-sm font-medium">
-                Şifre
+                Password
               </label>
               <Input
                 id="customerPassword"
@@ -102,13 +102,13 @@ const SignIn: React.FC = () => {
                 type="password"
                 value={formData.customerPassword}
                 onChange={handleChange}
-                placeholder="Şifrenizi girin"
+                placeholder="Enter your password"
                 required
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="text-sm font-medium">
-                Şifre Tekrar
+                Confirm Password
               </label>
               <Input
                 id="confirmPassword"
@@ -116,7 +116,7 @@ const SignIn: React.FC = () => {
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Şifrenizi tekrar girin"
+                placeholder="Confirm your password"
                 required
               />
             </div>
@@ -124,7 +124,7 @@ const SignIn: React.FC = () => {
               type="submit"
               className="w-full bg-primary text-black hover:bg-orange-500 hover:text-white"
             >
-              Hesap Oluştur
+              Create Account
             </Button>
           </form>
         </CardContent>

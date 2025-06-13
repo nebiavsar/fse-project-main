@@ -223,6 +223,49 @@ const TableManagement: React.FC = () => {
     }
   };
 
+  const removeWaiter = async (tableId: number) => {
+    try {
+      // Mevcut masa bilgilerini bul
+      const currentTable = tables.find(t => t.tableId === tableId);
+      if (!currentTable) {
+        throw new Error('Masa bulunamadı');
+      }
+
+      // Güncellenecek masa bilgilerini hazırla (garsonu kaldır)
+      const updatedTable = {
+        tableId,
+        tableTotalCost: currentTable.tableTotalCost,
+        tableAvailable: currentTable.isTableAvailable,
+        tableWaiter: null
+      };
+      
+      console.log('Garson kaldırılacak masa bilgileri:', updatedTable);
+      
+      const response = await fetch(API_ENDPOINTS.TABLES.BY_ID(tableId), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTable)
+      });
+
+      if (!response.ok) {
+        throw new Error('Garson kaldırılırken bir hata oluştu');
+      }
+
+      const data = await response.json();
+      console.log('Masa güncellendi:', data);
+      
+      await fetchTables(); // Masaları yeniden yükle
+      toast.success('Garson başarıyla kaldırıldı');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Garson kaldırılırken bir hata oluştu';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error('Garson kaldırma hatası:', err);
+    }
+  };
+
   const handleDeleteServer = async (serverId: number) => {
     try {
       // Kullanıcıdan onay al
@@ -236,16 +279,17 @@ const TableManagement: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Garson silinirken bir hata oluştu');
+        throw new Error(errorData.message || 'Garson şuan bir masaya atanmış durumda silinemez !');
       }
 
       await fetchServers();
       toast.success('Garson başarıyla silindi');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Garson silinirken bir hata oluştu';
-      setError(errorMessage);
       toast.error(errorMessage);
       console.error('Garson silme hatası:', err);
+      // Hata durumunda setError'u kaldırıyoruz
+      setError(null);
     }
   };
 
@@ -349,8 +393,21 @@ const TableManagement: React.FC = () => {
                   {table.isTableAvailable ? 'Müsait' : 'Dolu'}
                 </div>
                 {table.tableWaiter && (
-                  <div className="text-sm text-gray-600 mt-1">
-                    Garson: {table.tableWaiter.employeeName}
+                  <div className="flex justify-between items-center mt-1">
+                    <div className="text-sm text-gray-600">
+                      Garson: {table.tableWaiter.employeeName}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent table click event
+                        if (window.confirm('Bu masadan garsonu kaldırmak istediğinizden emin misiniz?')) {
+                          removeWaiter(table.tableId);
+                        }
+                      }}
+                      className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                    >
+                      Garsonu Kaldır
+                    </button>
                   </div>
                 )}
               </Card>

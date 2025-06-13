@@ -23,7 +23,7 @@ const Login: React.FC = () => {
         const customer = customers[0];
 
         if (customer && customer.customerPassword === password) {
-          toast.success('Giriş başarılı!', {
+          toast.success('Login successful!', {
             style: {
               background: '#22c55e',
               color: 'white',
@@ -34,7 +34,7 @@ const Login: React.FC = () => {
           login(customer.customerId.toString(), customer.customerName);
           navigate('/');
         } else {
-          toast.error('E-posta veya şifre hatalı!', {
+          toast.error('Invalid email or password!', {
             duration: 3000,
             position: 'top-center',
             style: {
@@ -58,33 +58,33 @@ const Login: React.FC = () => {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-100 p-4">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Giriş Yap</CardTitle>
+          <CardTitle className="text-2xl text-center">Login</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                E-posta
+                Email
               </label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-posta adresinizi girin"
+                placeholder="Enter your email"
                 required
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Şifre
+                Password
               </label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Şifrenizi girin"
+                placeholder="Enter your password"
                 required
               />
             </div>
@@ -92,7 +92,7 @@ const Login: React.FC = () => {
               type="submit"
               className="w-full bg-primary text-black hover:bg-orange-500 hover:text-white"
             >
-              Giriş Yap
+              Login
             </Button>
           </form>
         </CardContent>
