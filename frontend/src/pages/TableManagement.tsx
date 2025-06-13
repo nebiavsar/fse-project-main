@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Table, Server } from '../types/index';
 import { Card } from '@/components/ui/card';
 import { API_ENDPOINTS } from '../config/api';
+import { toast } from 'react-hot-toast';
 
 const TableManagement: React.FC = () => {
   const [tables, setTables] = useState<Table[]>([]);
@@ -220,6 +221,32 @@ const TableManagement: React.FC = () => {
     }
   };
 
+  const handleDeleteServer = async (serverId: number) => {
+    try {
+      // Kullanıcıdan onay al
+      if (!window.confirm('Bu garsonu silmek istediğinizden emin misiniz?')) {
+        return;
+      }
+
+      const response = await fetch(API_ENDPOINTS.WAITERS.BY_ID(serverId), {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Garson silinirken bir hata oluştu');
+      }
+
+      await fetchServers();
+      toast.success('Garson başarıyla silindi');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Garson silinirken bir hata oluştu';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error('Garson silme hatası:', err);
+    }
+  };
+
   if (loading) return <div className="container mx-auto p-4">Yükleniyor...</div>;
   if (error) return <div className="container mx-auto p-4 text-red-500">{error}</div>;
 
@@ -309,9 +336,19 @@ const TableManagement: React.FC = () => {
           <div className="space-y-4">
             {servers.map((server) => (
               <Card key={server.employeeId} className="p-4 bg-white border-gray-200">
-                <div className="font-semibold text-lg mb-2">{server.employeeName}</div>
-                <div className="text-sm text-gray-600">
-                  Maaş: {server.employeeSalary} TL
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-semibold text-lg mb-2">{server.employeeName}</div>
+                    <div className="text-sm text-gray-600">
+                      Maaş: {server.employeeSalary} TL
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteServer(server.employeeId)}
+                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                  >
+                    Sil
+                  </button>
                 </div>
               </Card>
             ))}

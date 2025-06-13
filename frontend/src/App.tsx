@@ -113,6 +113,7 @@ function App() {
                 <Route path="/kitchen" element={<KitchenOrder />} />
                 <Route path="/management" element={<MenuManagement />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/tables" element={<TableManagement />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<Profile />} />
