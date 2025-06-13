@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.restaurant.restaurant_api.RestaurantApiApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.230 s -- in com.restaurant.restaurant_api.RestaurantApiApplicationTests
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.708 s -- in com.restaurant.restaurant_api.RestaurantApiApplicationTests

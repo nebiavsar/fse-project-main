@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.restaurant.restaurant_api.RestaurantApiApplicationTests" time="4.708" tests="4" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.restaurant.restaurant_api.TableServiceTest" time="0.096" tests="4" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -66,52 +66,27 @@
     <property name="java.class.version" value="65.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[restaurantApi] "/>
   </properties>
-  <testcase name="testDeleteOrderById_notExists_throwsException" classname="com.restaurant.restaurant_api.RestaurantApiApplicationTests" time="0.838">
-    <system-out><![CDATA[17:58:32.843 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.restaurant.restaurant_api.RestaurantApiApplicationTests]: RestaurantApiApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-17:58:32.956 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.restaurant.restaurant_api.RestaurantApiApplication for test class com.restaurant.restaurant_api.RestaurantApiApplicationTests
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v3.4.5)
-
-2025-06-13T17:58:33.256+03:00  INFO 23044 --- [restaurantApi] [           main] c.r.r.RestaurantApiApplicationTests      : Starting RestaurantApiApplicationTests using Java 21.0.4 with PID 23044 (started by nebi in C:\Users\nebi\Desktop\fos\fse-project-main\backend)
-2025-06-13T17:58:33.258+03:00  INFO 23044 --- [restaurantApi] [           main] c.r.r.RestaurantApiApplicationTests      : No active profile set, falling back to 1 default profile: "default"
-2025-06-13T17:58:33.753+03:00  INFO 23044 --- [restaurantApi] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-06-13T17:58:33.800+03:00  INFO 23044 --- [restaurantApi] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 42 ms. Found 6 JPA repository interfaces.
-2025-06-13T17:58:34.238+03:00  INFO 23044 --- [restaurantApi] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-06-13T17:58:34.285+03:00  INFO 23044 --- [restaurantApi] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.13.Final
-2025-06-13T17:58:34.323+03:00  INFO 23044 --- [restaurantApi] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-06-13T17:58:34.585+03:00  INFO 23044 --- [restaurantApi] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-06-13T17:58:34.623+03:00  INFO 23044 --- [restaurantApi] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-06-13T17:58:34.777+03:00  INFO 23044 --- [restaurantApi] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1109730f
-2025-06-13T17:58:34.777+03:00  INFO 23044 --- [restaurantApi] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-06-13T17:58:34.814+03:00  WARN 23044 --- [restaurantApi] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-06-13T17:58:34.827+03:00  INFO 23044 --- [restaurantApi] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 8.0.33
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2025-06-13T17:58:35.493+03:00  INFO 23044 --- [restaurantApi] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-06-13T17:58:35.561+03:00  INFO 23044 --- [restaurantApi] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-06-13T17:58:36.168+03:00  WARN 23044 --- [restaurantApi] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-06-13T17:58:36.535+03:00  INFO 23044 --- [restaurantApi] [           main] c.r.r.RestaurantApiApplicationTests      : Started RestaurantApiApplicationTests in 3.491 seconds (process running for 4.234)
+  <testcase name="testGetTableById_ValidId" classname="com.restaurant.restaurant_api.TableServiceTest" time="0.073">
+    <system-out><![CDATA[TEST: getTableById - Geçerli ID ile masa getiriliyor mu test ediliyor.
+Masa ID'ye göre masa getirildi: com.restaurant.restaurant_api.Model.Table@209ab1d7
+SONUÇ: testGetTableById_ValidId PASSED
 ]]></system-out>
-    <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
-WARNING: A Java agent has been loaded dynamically (C:\Users\nebi\.m2\repository\net\bytebuddy\byte-buddy-agent\1.15.11\byte-buddy-agent-1.15.11.jar)
-WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
-WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
-WARNING: Dynamic loading of agents will be disallowed by default in a future release
-]]></system-err>
   </testcase>
-  <testcase name="testGetAllOrdersReturnsOrders" classname="com.restaurant.restaurant_api.RestaurantApiApplicationTests" time="0.031"/>
-  <testcase name="testDeleteOrderById_validAndExists_deletesOrder" classname="com.restaurant.restaurant_api.RestaurantApiApplicationTests" time="0.004"/>
-  <testcase name="testGetOrderById_invalidId_throwsException" classname="com.restaurant.restaurant_api.RestaurantApiApplicationTests" time="0.012"/>
+  <testcase name="testDeleteTableById_TableExists" classname="com.restaurant.restaurant_api.TableServiceTest" time="0.0">
+    <system-out><![CDATA[TEST: deleteTableById - Mevcut masa başarıyla siliniyor mu test ediliyor.
+Masa silindi: 1
+SONUÇ: testDeleteTableById_TableExists PASSED
+]]></system-out>
+  </testcase>
+  <testcase name="testGetAllTables" classname="com.restaurant.restaurant_api.TableServiceTest" time="0.016">
+    <system-out><![CDATA[TEST: getAllTables - Tüm masaların başarıyla getirildiği test ediliyor.
+Tüm masalar getirildi: [com.restaurant.restaurant_api.Model.Table@13515709, com.restaurant.restaurant_api.Model.Table@1b3a1e42]
+SONUÇ: testGetAllTables PASSED
+]]></system-out>
+  </testcase>
+  <testcase name="testGetTableById_InvalidId" classname="com.restaurant.restaurant_api.TableServiceTest" time="0.005">
+    <system-out><![CDATA[TEST: getTableById - Geçersiz ID ile IllegalArgumentException fırlatılıyor mu test ediliyor.
+SONUÇ: testGetTableById_InvalidId PASSED
+]]></system-out>
+  </testcase>
 </testsuite>
