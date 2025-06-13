@@ -31,12 +31,18 @@ public class MenuItemService {
     }
 
     public MenuItem createMenuItem(MenuItem menuItem) {
+        if (menuItem.getMenuItemStock() < 0) {
+            throw new RuntimeException("Stock cannot be negative");
+        }
         return menuItemRepository.save(menuItem);
     }
 
     public MenuItem updateMenuItem(MenuItem menuItem) {
         if (!menuItemRepository.existsById(menuItem.getMenuItemId())) {
             throw new RuntimeException("Menu item not found");
+        }
+        if (menuItem.getMenuItemStock() < 0) {
+            throw new RuntimeException("Stock cannot be negative");
         }
         return menuItemRepository.save(menuItem);
     }
@@ -63,5 +69,21 @@ public class MenuItemService {
 
     public List<MenuItem> getMenuItemByCategory(String category) {
         return menuItemRepository.findByMenuItemCategory(category);
+    }
+
+    public MenuItem updateStock(int id, int quantity) {
+        MenuItem menuItem = getMenuItemById(id);
+        int newStock = menuItem.getMenuItemStock() + quantity;
+        if (newStock < 0) {
+            throw new RuntimeException("Stock cannot be negative");
+        }
+        menuItem.setMenuItemStock(newStock);
+        return menuItemRepository.save(menuItem);
+    }
+
+    public List<MenuItem> getLowStockItems(int threshold) {
+        return menuItemRepository.findAll().stream()
+                .filter(item -> item.getMenuItemStock() <= threshold)
+                .toList();
     }
 }

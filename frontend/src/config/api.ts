@@ -22,5 +22,11 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE_URL}/Cards`,
     BY_ID: (id: number) => `${API_BASE_URL}/Cards/${id}`,
     CREATE: `${API_BASE_URL}/Cards`,
+  },
+  MENU_ITEMS: {
+    BASE: `${API_BASE_URL}/api/menu-items`,
+    BY_ID: (id: number) => `${API_BASE_URL}/api/menu-items/${id}`,
+    BY_CATEGORY: (category: string) => `${API_BASE_URL}/api/menu-items/filter/${category}`,
+    CREATE: `${API_BASE_URL}/api/menu-items`
   }
 } as const; 

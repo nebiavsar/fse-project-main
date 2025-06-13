@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import { API_ENDPOINTS } from '@/config/api';
+import { useAuth } from '../contexts/AuthContext';
+import { AlertCircle } from 'lucide-react';
 
 interface MenuItem {
   menuItemId: number;
   menuItemName: string;
   menuItemPrice: number;
+  menuItemStock: number;
 }
 
 interface Order {
@@ -23,12 +26,14 @@ const Admin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loginInfo, setLoginInfo] = useState<{ username: string; password: string } | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const navigate = useNavigate();
+  const { isLoggedIn, isAdmin, login, logout } = useAuth();
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
+    if (isLoggedIn && isAdmin) {
       fetchOrders();
+      fetchMenuItems();
     }
 
     fetch('/logininformation.txt')
@@ -45,7 +50,7 @@ const Admin: React.FC = () => {
         console.error('Login bilgileri yüklenirken hata:', error);
         toast.error('Login bilgileri yüklenemedi');
       });
-  }, []);
+  }, [isLoggedIn, isAdmin]);
 
   const fetchOrders = async () => {
     try {
@@ -55,6 +60,17 @@ const Admin: React.FC = () => {
     } catch (error) {
       console.error('Siparişler yüklenirken hata:', error);
       toast.error('Siparişler yüklenemedi');
+    }
+  };
+
+  const fetchMenuItems = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.MENU_ITEMS.BASE);
+      const data = await response.json();
+      setMenuItems(data);
+    } catch (error) {
+      console.error('Menü öğeleri yüklenirken hata:', error);
+      toast.error('Menü öğeleri yüklenemedi');
     }
   };
 
@@ -104,8 +120,7 @@ const Admin: React.FC = () => {
           borderRadius: '8px'
         }
       });
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('isAdmin', 'true');
+      login('admin', 'Admin', true);
       fetchOrders();
     } else {
       setUsername('');
@@ -124,13 +139,12 @@ const Admin: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
+    logout();
     setOrders([]);
     toast.success('Çıkış yapıldı');
   };
 
-  if (localStorage.getItem('isLoggedIn') !== 'true') {
+  if (!isLoggedIn || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <Card className="w-[400px]">
@@ -180,6 +194,8 @@ const Admin: React.FC = () => {
 
   const { totalSales, totalOrders, popularItems } = calculateSalesReport();
 
+  const lowStockItems = menuItems.filter(item => item.menuItemStock < 10);
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
@@ -221,6 +237,35 @@ const Admin: React.FC = () => {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Stok Takip Durumu */}
+        <Card className="col-span-full">
+          <CardHeader>
+            <CardTitle>Stok Takip Durumu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {lowStockItems.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">Tüm ürünlerin stok durumu yeterli.</p>
+            ) : (
+              <div className="space-y-4">
+                {lowStockItems.map((item) => (
+                  <div key={item.menuItemId} className="flex justify-between items-center p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="flex-1">
+                      <p className="font-medium">{item.menuItemName}</p>
+                      <p className="text-sm text-gray-600">Kalan Stok: {item.menuItemStock}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-red-600">
+                      <AlertCircle className="w-5 h-5" />
+                      <span className="font-medium">
+                        {item.menuItemStock === 0 ? 'Stok bitti!' : 'Stok bitmek üzere!'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

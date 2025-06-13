@@ -16,6 +16,8 @@ const TableManagement: React.FC = () => {
     employeeName: '',
     employeeSalary: 0
   });
+  const [showEditServer, setShowEditServer] = useState(false);
+  const [editingServer, setEditingServer] = useState<Server | null>(null);
 
   useEffect(() => {
     fetchTables();
@@ -247,6 +249,58 @@ const TableManagement: React.FC = () => {
     }
   };
 
+  const handleEditServer = async () => {
+    if (!editingServer) return;
+
+    try {
+      // Backend'in beklediği formata uygun veri hazırlama
+      const updatedServerData = {
+        employeeId: editingServer.employeeId,
+        employeeName: editingServer.employeeName,
+        employeeSalary: editingServer.employeeSalary,
+        waiterTables: editingServer.waiterTables || 0
+      };
+
+      console.log('Güncellenecek garson bilgileri:', updatedServerData);
+      console.log('API Endpoint:', API_ENDPOINTS.WAITERS.BY_ID(editingServer.employeeId));
+
+      const response = await fetch(API_ENDPOINTS.WAITERS.BY_ID(editingServer.employeeId), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(updatedServerData)
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Error response:', errorData);
+        throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const updatedServer = await response.json();
+      console.log('Güncellenmiş garson bilgileri:', updatedServer);
+
+      // Güncelleme başarılı olduktan sonra garson listesini yenile
+      await fetchServers();
+      
+      // Modal'ı kapat ve state'i temizle
+      setShowEditServer(false);
+      setEditingServer(null);
+      
+      toast.success('Garson bilgileri başarıyla güncellendi');
+    } catch (err) {
+      console.error('Tam hata detayı:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Garson güncellenirken bir hata oluştu';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
   if (loading) return <div className="container mx-auto p-4">Yükleniyor...</div>;
   if (error) return <div className="container mx-auto p-4 text-red-500">{error}</div>;
 
@@ -343,12 +397,23 @@ const TableManagement: React.FC = () => {
                       Maaş: {server.employeeSalary} TL
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteServer(server.employeeId)}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                  >
-                    Sil
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingServer(server);
+                        setShowEditServer(true);
+                      }}
+                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => handleDeleteServer(server.employeeId)}
+                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -392,6 +457,54 @@ const TableManagement: React.FC = () => {
                 <button
                   onClick={() => setShowAddServer(false)}
                   className="flex-1 p-2 bg-gray-500 text-black rounded-md hover:bg-gray-600"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Edit Server Dialog */}
+      {showEditServer && editingServer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <Card className="w-96 p-4 bg-white">
+            <h3 className="text-lg font-semibold mb-4">Garson Bilgilerini Düzenle</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Garson Adı</label>
+                <input
+                  type="text"
+                  value={editingServer.employeeName}
+                  onChange={(e) => setEditingServer({ ...editingServer, employeeName: e.target.value })}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="Garson adını girin"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Güncellenmiş Maaş</label>
+                <input
+                  type="number"
+                  value={editingServer.employeeSalary}
+                  onChange={(e) => setEditingServer({ ...editingServer, employeeSalary: Number(e.target.value) })}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="Yeni maaş miktarını girin"
+                />
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleEditServer}
+                  className="flex-1 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                >
+                  Güncelle
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEditServer(false);
+                    setEditingServer(null);
+                  }}
+                  className="flex-1 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
                 >
                   İptal
                 </button>

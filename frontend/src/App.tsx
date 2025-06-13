@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { CartProvider, useCart } from './contexts/CartContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 import Menu from './pages/Menu';
 import MenuManagement from './pages/MenuManagement';
@@ -19,14 +20,10 @@ import Profile from './pages/Profile';
 const Header = () => {
   const { totalItems } = useCart();
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const { isLoggedIn, isAdmin, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('customerId');
-    localStorage.removeItem('customerName');
+    logout();
     toast.success('Logged out successfully');
     navigate('/');
   };
@@ -36,6 +33,14 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex gap-6">
+            {isAdmin && (
+              <Link 
+                to="/admin" 
+                className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105"
+              >
+                Admin
+              </Link>
+            )}
             {isAdmin ? (
               <>
                 <Link to="/table-management" className="inline-flex h-11 items-center justify-center rounded-full border border-blue-500 bg-gradient-to-r from-blue-400 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg transition-transform transform hover:scale-105">Tables</Link>
@@ -92,36 +97,38 @@ const Header = () => {
 function App() {
   return (
     <Router>
-      <CartProvider>
-        <Toaster position="top-right" />
-        <div className="min-h-screen bg-background text-foreground">
-          <Header />
+      <AuthProvider>
+        <CartProvider>
+          <Toaster position="top-right" />
+          <div className="min-h-screen bg-background text-foreground">
+            <Header />
 
-          {/* Main Content */}
-          <main className="pt-4">
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-              </div>
-            }>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/menu" element={<Menu />} />
-                <Route path="/table-management" element={<TableManagement />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/payment/:tableId" element={<Payment />} />
-                <Route path="/kitchen" element={<KitchenOrder />} />
-                <Route path="/management" element={<MenuManagement />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/tables" element={<TableManagement />} />
-                <Route path="/sign-in" element={<SignIn />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/profile" element={<Profile />} />
-              </Routes>
-            </Suspense>
-          </main>
-        </div>
-      </CartProvider>
+            {/* Main Content */}
+            <main className="pt-4">
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[60vh]">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+                </div>
+              }>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/menu" element={<Menu />} />
+                  <Route path="/table-management" element={<TableManagement />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/payment/:tableId" element={<Payment />} />
+                  <Route path="/kitchen" element={<KitchenOrder />} />
+                  <Route path="/management" element={<MenuManagement />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/tables" element={<TableManagement />} />
+                  <Route path="/sign-in" element={<SignIn />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Routes>
+              </Suspense>
+            </main>
+          </div>
+        </CartProvider>
+      </AuthProvider>
     </Router>
   );
 }

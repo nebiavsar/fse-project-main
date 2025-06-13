@@ -24,6 +24,7 @@ export interface MenuItem {
   menuItemPrice: number;
   menuItemPic: string;
   menuItemCategory: string;
+  menuItemStock: number;
 }
 
 // Backend'deki orderStatue değerleri

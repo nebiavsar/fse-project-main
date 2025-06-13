@@ -55,6 +55,21 @@ public class MenuItemController {
         return new ResponseEntity<>(menuItemService.getMenuItemByCategory(category), HttpStatus.OK);
     }
 
+    @PutMapping("/{id}/stock")
+    public ResponseEntity<MenuItem> updateStock(@PathVariable int id, @RequestParam int quantity) {
+        try {
+            return ResponseEntity.ok(menuItemService.updateStock(id, quantity));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(null);
+        }
+    }
+
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<MenuItem>> getLowStockItems(@RequestParam(defaultValue = "5") int threshold) {
+        return ResponseEntity.ok(menuItemService.getLowStockItems(threshold));
+    }
+
     public MenuItemService getMenuItemService() {
         return menuItemService;
     }

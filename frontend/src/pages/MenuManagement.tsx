@@ -39,7 +39,8 @@ const MenuManagement: React.FC = () => {
     menuItemDesc: '',
     menuItemPrice: '',
     menuItemCategory: '',
-    menuItemPic: ''
+    menuItemPic: '',
+    menuItemStock: ''
   });
 
   const categories = ['Main Course', 'Appetizer', 'Dessert', 'Beverage', 'Salad'];
@@ -78,11 +79,12 @@ const MenuManagement: React.FC = () => {
       menuItemDesc: formData.menuItemDesc,
       menuItemPrice: parseInt(formData.menuItemPrice),
       menuItemCategory: formData.menuItemCategory,
-      menuItemPic: formData.menuItemPic
+      menuItemPic: formData.menuItemPic,
+      menuItemStock: parseInt(formData.menuItemStock)
     };
 
     try {
-      console.log('Submitting data:', menuItemData); // Debug log
+      console.log('Submitting data:', menuItemData);
       
       if (selectedItem) {
         const response = await axios.put(`http://localhost:8081/api/menu-items/${selectedItem.menuItemId}`, menuItemData);
@@ -101,12 +103,13 @@ const MenuManagement: React.FC = () => {
         menuItemDesc: '',
         menuItemPrice: '',
         menuItemCategory: '',
-        menuItemPic: ''
+        menuItemPic: '',
+        menuItemStock: ''
       });
       setSelectedItem(null);
       await fetchMenuItems();
     } catch (error) {
-      console.error('Error saving menu item:', error); // Detailed error logging
+      console.error('Error saving menu item:', error);
       if (axios.isAxiosError(error)) {
         toast.error(`Failed to save menu item: ${error.response?.data?.message || error.message}`);
       } else {
@@ -122,7 +125,8 @@ const MenuManagement: React.FC = () => {
       menuItemDesc: item.menuItemDesc,
       menuItemPrice: item.menuItemPrice.toString(),
       menuItemCategory: item.menuItemCategory,
-      menuItemPic: item.menuItemPic
+      menuItemPic: item.menuItemPic,
+      menuItemStock: item.menuItemStock.toString()
     });
     setIsEditDialogOpen(true);
   };
@@ -165,6 +169,15 @@ const MenuManagement: React.FC = () => {
         value={formData.menuItemPrice}
         onChange={handleInputChange}
         required
+      />
+      <Input
+        name="menuItemStock"
+        type="number"
+        placeholder="Stock Quantity"
+        value={formData.menuItemStock}
+        onChange={handleInputChange}
+        required
+        min="0"
       />
       <div className="relative z-[1100]">
         <Select value={formData.menuItemCategory} onValueChange={handleCategoryChange}>
@@ -218,6 +231,7 @@ const MenuManagement: React.FC = () => {
             <TableHead>Description</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>Stock</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -228,6 +242,7 @@ const MenuManagement: React.FC = () => {
               <TableCell>{item.menuItemDesc}</TableCell>
               <TableCell>${item.menuItemPrice}</TableCell>
               <TableCell>{item.menuItemCategory}</TableCell>
+              <TableCell>{item.menuItemStock}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={() => handleEdit(item)}>Edit</Button>

@@ -21,24 +21,28 @@ public class MenuItem {
     private String menuItemPic;
     @Column(name = "menu_item_category")
     private String menuItemCategory;
+    @Column(name = "menu_item_stock", nullable = false)
+    private int menuItemStock;
 
     public MenuItem() {}
 
-    public MenuItem(int menuItemId, String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory) {
+    public MenuItem(int menuItemId, String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory, int menuItemStock) {
         this.menuItemId = menuItemId;
         this.menuItemName = menuItemName;
         this.menuItemDesc = menuItemDesc;
         this.menuItemPrice = menuItemPrice;
         this.menuItemPic = menuItemPic;
         this.menuItemCategory = menuItemCategory;
+        this.menuItemStock = menuItemStock;
     }
 
-    public MenuItem(String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory) {
+    public MenuItem(String menuItemName, String menuItemDesc, int menuItemPrice, String menuItemPic, String menuItemCategory, int menuItemStock) {
         this.menuItemName = menuItemName;
         this.menuItemDesc = menuItemDesc;
         this.menuItemPrice = menuItemPrice;
         this.menuItemPic = menuItemPic;
         this.menuItemCategory = menuItemCategory;
+        this.menuItemStock = menuItemStock;
     }
 
     public int getMenuItemId() {
@@ -89,6 +93,14 @@ public class MenuItem {
         this.menuItemCategory = menuItemCategory;
     }
 
+    public int getMenuItemStock() {
+        return menuItemStock;
+    }
+
+    public void setMenuItemStock(int menuItemStock) {
+        this.menuItemStock = menuItemStock;
+    }
+
     @Override
     public String toString() {
         return "MenuItem{" +
@@ -98,6 +110,7 @@ public class MenuItem {
                 ", menuItemPrice=" + menuItemPrice +
                 ", menuItemPic='" + menuItemPic + '\'' +
                 ", menuItemCategory='" + menuItemCategory + '\'' +
+                ", menuItemStock=" + menuItemStock +
                 '}';
     }
 }

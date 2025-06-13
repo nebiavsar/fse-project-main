@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ const Login: React.FC = () => {
       
       if (response.ok) {
         const customers = await response.json();
-        const customer = customers[0]; // Email unique olduğu için tek bir sonuç dönecek
+        const customer = customers[0];
 
         if (customer && customer.customerPassword === password) {
           toast.success('Giriş başarılı!', {
@@ -29,9 +31,7 @@ const Login: React.FC = () => {
               borderRadius: '8px'
             }
           });
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('customerId', customer.customerId.toString());
-          localStorage.setItem('customerName', customer.customerName);
+          login(customer.customerId.toString(), customer.customerName);
           navigate('/');
         } else {
           toast.error('E-posta veya şifre hatalı!', {
